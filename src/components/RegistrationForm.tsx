@@ -6,8 +6,8 @@ const RegistrationForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [studyType, setStudyType] = useState<number>(0);
-  const [selectedGrades, setSelectedGrades] = useState<number[]>([]);
+  const [studyType, setStudyType] = useState<string>('');
+  const [selectedGrades, setSelectedGrades] = useState<string[]>([]);
   const [gradesError, setGradesError] = useState<string>('');
   const [docTypes, setDocTypes] = useState<TipoDocumento[]>([]);
   const [tipoEstudios, setTipoEstudios] = useState<TipoEstudio[]>([]);
@@ -15,15 +15,16 @@ const RegistrationForm: React.FC = () => {
   const [tiemposValidacion, setTiemposValidacion] = useState<TiempoValidacion[]>([]);
   const [tiemposValidacionLoading, setTiemposValidacionLoading] = useState(false);
   const [tiemposValidacionError, setTiemposValidacionError] = useState<string | null>(null);
-  const [selectedTiempoValidacion, setSelectedTiempoValidacion] = useState<number>(0);
+  const [selectedTiempoValidacion, setSelectedTiempoValidacion] = useState<string>('');
   const [tiempoSeleccionError, setTiempoSeleccionError] = useState<string>('');
 
   const idTipoEducacionFormal = useMemo(
-    () => tipoEstudios.find((t) => t.nombre === 'Educacion formal')?.id_tipo_estudio,
+    () => tipoEstudios.find((t) => t.nombre === 'Educacion formal')?.idTipoEstudio,
     [tipoEstudios]
   );
+
   const idTipoValidacionGrados = useMemo(
-    () => tipoEstudios.find((t) => t.nombre === 'Validacion de grados')?.id_tipo_estudio,
+    () => tipoEstudios.find((t) => t.nombre === 'Validacion de grados')?.idTipoEstudio,
     [tipoEstudios]
   );
 
@@ -36,6 +37,7 @@ const RegistrationForm: React.FC = () => {
           getTipoEstudios(),
           getGradosEducacion(),
         ]);
+        
         setDocTypes(docs);
         setTipoEstudios(estudios);
         setTipoGrados(grados);
@@ -75,7 +77,7 @@ const RegistrationForm: React.FC = () => {
     };
   }, [studyType, idTipoValidacionGrados]);
 
-  const handleGradeChange = (grade: number, checked: boolean) => {
+  const handleGradeChange = (grade: string, checked: boolean) => {
     if (checked) {
       setSelectedGrades(prev => [...prev, grade]);
       setGradesError('');
@@ -113,16 +115,16 @@ const RegistrationForm: React.FC = () => {
 
     try {
       formData.forEach((key, value) => {
-        console.log(key + " " + value);
+        console.log(key + " -- " + value);
         
       });
       await submitRegistration(formData);
       setSuccess(true);
       (e.target as HTMLFormElement).reset();
-      setStudyType(0);
+      setStudyType('');
       setSelectedGrades([]);
       setGradesError('');
-      setSelectedTiempoValidacion(0);
+      setSelectedTiempoValidacion('');
       setTiempoSeleccionError('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al enviar el formulario');
@@ -204,11 +206,11 @@ const RegistrationForm: React.FC = () => {
                 </label>
                 <div className="space-y-2">
                   {docTypes.map((type) => (
-                    <label key={type.id_tipo_documento} className="flex items-center">
+                    <label key={type.idTipoDocumento} className="flex items-center">
                       <input
                         type="radio"
                         name="id_tipo_documento"
-                        value={type.id_tipo_documento}
+                        value={type.idTipoDocumento}
                         required
                         className="mr-2 cursor-pointer"
                       />
@@ -286,8 +288,8 @@ const RegistrationForm: React.FC = () => {
                       {[
                         { value: 'F', label: 'Femenino' },
                         { value: 'M', label: 'Masculino' },
-                      ].map((option) => (
-                        <label key={option.value} className="flex items-center">
+                      ].map((option, index) => (
+                        <label key={index} className="flex items-center">
                           <input
                             type="radio"
                             name="sexo"
@@ -460,13 +462,14 @@ const RegistrationForm: React.FC = () => {
                 </label>
                 <select
                   name="id_tipo_estudio"
-                  value={studyType === 0 ? '' : String(studyType)}
+                  value={studyType === '' ? '' : String(studyType)}
                   onChange={(e) => {
                     const raw = e.target.value;
-                    setStudyType(raw === '' ? 0 : Number(raw));
+
+                    setStudyType(raw === '' ? '' : String(raw));
                     setSelectedGrades([]);
                     setGradesError('');
-                    setSelectedTiempoValidacion(0);
+                    setSelectedTiempoValidacion('');
                     setTiempoSeleccionError('');
                   }}
                   required
@@ -475,7 +478,7 @@ const RegistrationForm: React.FC = () => {
                   <option value="">Seleccione...</option>
                   {tipoEstudios.length && (
                     tipoEstudios.map((te) => (
-                      <option key={te.id_tipo_estudio} value={te.id_tipo_estudio}>
+                      <option key={te.idTipoEstudio} value={te.idTipoEstudio}>
                         {te.nombre}
                       </option>
                     ))
@@ -498,7 +501,7 @@ const RegistrationForm: React.FC = () => {
                     <option value="">Seleccione...</option>
                     {tipoGrados.length && (
                       tipoGrados.map((g) => (
-                        <option key={g.id_grado_educacion} value={g.id_grado_educacion}>
+                        <option key={g.idGradoEducacion} value={g.idGradoEducacion}>
                           {g.nombre}
                         </option>
                       ))
@@ -518,13 +521,13 @@ const RegistrationForm: React.FC = () => {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {tipoGrados.length && (
                       tipoGrados.map((g) => (
-                        <label key={g.id_grado_educacion} className="flex items-center cursor-pointer">
+                        <label key={g.idGradoEducacion} className="flex items-center cursor-pointer">
                           <input
                             type="checkbox"
                             name="id_grado_educacion"
-                            value={g.id_grado_educacion}
-                            checked={selectedGrades.includes(g.id_grado_educacion)}
-                            onChange={(e) => handleGradeChange(g.id_grado_educacion, e.target.checked)}
+                            value={g.idGradoEducacion}
+                            checked={selectedGrades.includes(g.idGradoEducacion)}
+                            onChange={(e) => handleGradeChange(g.idGradoEducacion, e.target.checked)}
                             className="mr-2 cursor-pointer"
                           />
                           <span className="text-gray-700">{g.nombre}</span>
@@ -551,17 +554,17 @@ const RegistrationForm: React.FC = () => {
                     <div className="space-y-2">
                       {tiemposValidacion.map((t, idx) => (
                         <label
-                          key={t.id_tiempo_validacion}
+                          key={t.idTiempoValidacion}
                           className="flex items-center cursor-pointer text-sm text-gray-800"
                         >
                           <input
                             type="radio"
                             name="id_tiempo_validacion"
-                            value={t.id_tiempo_validacion}
+                            value={t.idTiempoValidacion}
                             required={idx === 0}
-                            checked={selectedTiempoValidacion === t.id_tiempo_validacion}
+                            checked={selectedTiempoValidacion === t.idTiempoValidacion}
                             onChange={() => {
-                              setSelectedTiempoValidacion(t.id_tiempo_validacion);
+                              setSelectedTiempoValidacion(t.idTiempoValidacion);
                               setTiempoSeleccionError('');
                             }}
                             className="mr-2 cursor-pointer"
@@ -621,8 +624,6 @@ const RegistrationForm: React.FC = () => {
             </div>
           </section>
 
-
-
           {/* Sección 5: Limitaciones y Capacidades */}
           <section className="bg-white p-8 rounded-lg shadow-md border-t-4 border-blue-950">
             <h3 className="text-blue-950 text-2xl font-bold uppercase border-b-2 border-gray-200 pb-3 mb-6">
@@ -644,8 +645,8 @@ const RegistrationForm: React.FC = () => {
                   'Parálisis Cerebral',
                   'Lesión Neuromuscular',
                   'Multi-impedido',
-                ].map((limitacion) => (
-                  <label key={limitacion} className="flex items-center cursor-pointer">
+                ].map((limitacion, idx) => (
+                  <label key={`${limitacion}-${idx}`} className="flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       name="limitaciones"
@@ -676,8 +677,8 @@ const RegistrationForm: React.FC = () => {
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4 px-3 mb-6">
                 {['Superdotado', 'Artístico', 'Científico', 'Tecnológico', 'Deportivo'].map(
-                  (capacidad) => (
-                    <label key={capacidad} className="flex items-center cursor-pointer">
+                  (capacidad, idx) => (
+                    <label key={`${capacidad}-${idx}`} className="flex items-center cursor-pointer">
                       <input
                         type="checkbox"
                         name="capacidades"
