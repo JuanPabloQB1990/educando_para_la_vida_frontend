@@ -7,6 +7,7 @@ export interface TipoDocumento {
 // Interfaz para la respuesta de la API
 export interface ApiResponse<T> {
   success: boolean;
+  message: string;
   data: T;
   error: string | null;
 }

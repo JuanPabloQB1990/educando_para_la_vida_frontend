@@ -10,7 +10,7 @@ export const config = {
     timeout: 30000,
     endpoints: {
       // Agregar más endpoints conforme se necesiten
-      inscripciones: '/inscripciones',
+      inscripciones: '/matriculas',
       tipoDocumento: '/usuario/tipo_documento',
       tipoEstudio: '/academico/tipo_estudio',
       gradoEducacion: '/academico/grado_educacion',

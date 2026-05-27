@@ -34,7 +34,7 @@ const HomePage: React.FC = () => {
               a paso a través de todos los requisitos necesarios.
             </p>
             <Link
-              to="/registro"
+              to="/matricula"
               className="inline-block bg-blue-950 hover:bg-blue-900 text-white font-bold py-3 px-8 rounded-lg transition duration-200"
             >
               Iniciar Inscripción →

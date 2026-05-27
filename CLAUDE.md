@@ -52,7 +52,8 @@ src/
 # Zona Pública
 Landing Page: Identidad institucional, Misión, Visión, Programas académicos y Beneficios.
 
-Formulario de Matrícula: Flujo guiado por pasos (Wizard) para la inscripción y carga de documentos adjuntos obligatorios.
+
+Formulario de Matrícula: Flujo guiado por pasos (Wizard) para la inscripción y carga de documentos adjuntos obligatorios. (ya implementado)
 
 Login: Formulario de acceso con manejo de estados de carga.
 

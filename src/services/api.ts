@@ -81,22 +81,25 @@ export const submitRegistration = async (formData: FormData): Promise<{ id: stri
   try {
     const response = await registrationApi.post<ApiResponse<{ id: string }>>(
       config.api.endpoints.inscripciones,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      }
+      formData
     );
     
     if (!response.data.success) {
+      console.log(response.data.message);
       throw new Error(response.data.error || 'Error al procesar la inscripción');
     }
+    console.log(response.data.message);
     
     return response.data.data;
   } catch (error) {
+    
     if (axios.isAxiosError(error)) {
-      throw new Error(error.response?.data?.error || error.message);
+      console.log(error.response?.data?.error);
+      const responseError = error.response?.data?.error;
+      const message = typeof responseError === 'string'
+        ? responseError
+        : responseError?.message || error.response?.data?.message || error.message;
+      throw new Error(message);
     }
     throw error;
   }

@@ -86,6 +86,19 @@ const RegistrationForm: React.FC = () => {
     }
   };
 
+  const [selectedLimitaciones, setSelectedLimitaciones] = useState<string[]>([]);
+  const [selectedCapacidades, setSelectedCapacidades] = useState<string[]>([]);
+
+  const handleLimitacionChange = (value: string, checked: boolean) => {
+    if (checked) setSelectedLimitaciones(prev => [...prev, value]);
+    else setSelectedLimitaciones(prev => prev.filter(v => v !== value));
+  };
+
+  const handleCapacidadChange = (value: string, checked: boolean) => {
+    if (checked) setSelectedCapacidades(prev => [...prev, value]);
+    else setSelectedCapacidades(prev => prev.filter(v => v !== value));
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -93,6 +106,31 @@ const RegistrationForm: React.FC = () => {
     setSuccess(false);
 
     const formData = new FormData(e.currentTarget);
+
+    // Añadir arrays de limitaciones y capacidades como campos repetidos para que multer los reciba como arrays
+    selectedLimitaciones.forEach((limitacion) => {
+      formData.append('limitaciones', limitacion);
+    });
+    selectedCapacidades.forEach((capacidad) => {
+      formData.append('capacidades', capacidad);
+    });
+
+    // Asegurar que `id_grado_educacion` siempre se envíe como array (JSON)
+    try {
+      let gradosArray: string[] = [];
+      // caso: validación de grados (varios seleccionados)
+      if (idTipoValidacionGrados !== undefined && studyType === idTipoValidacionGrados) {
+        gradosArray = selectedGrades.map(String);
+      } else if (idTipoEducacionFormal !== undefined && studyType === idTipoEducacionFormal) {
+        // caso: educación formal (select único) — tomar valor del form y convertir a array
+        const single = formData.get('id_grado_educacion');
+        if (single) gradosArray = [String(single)];
+      }
+      // Reemplazar/añadir en FormData como JSON
+      formData.set('id_grado_educacion', JSON.stringify(gradosArray));
+    } catch (err) {
+      console.warn('No fue posible normalizar id_grado_educacion como array', err);
+    }
 
     // Validación personalizada para validación de grados
     if (
@@ -105,7 +143,7 @@ const RegistrationForm: React.FC = () => {
         return;
       }
       setGradesError('');
-      if (tiemposValidacion.length > 0 && !formData.get('tiempo_validacion')) {
+      if (tiemposValidacion.length > 0 && !selectedTiempoValidacion) {
         setTiempoSeleccionError('Debe seleccionar un tiempo de validación.');
         setLoading(false);
         return;
@@ -114,15 +152,14 @@ const RegistrationForm: React.FC = () => {
     }
 
     try {
-      formData.forEach((key, value) => {
-        console.log(key + " -- " + value);
-        
-      });
+     
       await submitRegistration(formData);
       setSuccess(true);
       (e.target as HTMLFormElement).reset();
       setStudyType('');
       setSelectedGrades([]);
+      setSelectedLimitaciones([]);
+      setSelectedCapacidades([]);
       setGradesError('');
       setSelectedTiempoValidacion('');
       setTiempoSeleccionError('');
@@ -286,8 +323,8 @@ const RegistrationForm: React.FC = () => {
                     </label>
                     <div className="space-y-1">
                       {[
-                        { value: 'F', label: 'Femenino' },
-                        { value: 'M', label: 'Masculino' },
+                        { value: 'Femenino', label: 'Femenino' },
+                        { value: 'Masculino', label: 'Masculino' },
                       ].map((option, index) => (
                         <label key={index} className="flex items-center">
                           <input
@@ -649,24 +686,37 @@ const RegistrationForm: React.FC = () => {
                   <label key={`${limitacion}-${idx}`} className="flex items-center cursor-pointer">
                     <input
                       type="checkbox"
-                      name="limitaciones"
                       value={limitacion}
+                      checked={selectedLimitaciones.includes(limitacion)}
+                      onChange={(e) => handleLimitacionChange(limitacion, e.target.checked)}
                       className="mr-3 cursor-pointer"
                     />
                     <span className="text-gray-700">{limitacion}</span>
                   </label>
                 ))}
               </div>
+              
+            </div>
+            <div className="mb-8">
+              <label className="block font-semibold mb-3">
+                Otras Limitaciones <span className="text-red-600">*</span>
+              </label>
+              <input
+                type="text"
+                name="otras_limitaciones"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none transition"
+              />
             </div>
 
             <div className="mb-8">
               <label className="block font-semibold mb-3">
-                Diagnósticos Escaneados (Un solo archivo)
+                Diagnósticos Escaneados (Un solo archivo) <span className="text-red-600">*</span>
               </label>
               <input
                 type="file"
                 name="file_diagnostico"
                 accept=".pdf,image/*"
+                required
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none transition file:mr-3 file:py-1 file:px-2 file:rounded file:border file:border-gray-300 file:bg-gray-50 file:cursor-pointer"
               />
             </div>
@@ -681,8 +731,9 @@ const RegistrationForm: React.FC = () => {
                     <label key={`${capacidad}-${idx}`} className="flex items-center cursor-pointer">
                       <input
                         type="checkbox"
-                        name="capacidades"
                         value={capacidad}
+                        checked={selectedCapacidades.includes(capacidad)}
+                        onChange={(e) => handleCapacidadChange(capacidad, e.target.checked)}
                         className="mr-3 cursor-pointer"
                       />
                       <span className="text-gray-700">{capacidad}</span>
@@ -694,11 +745,12 @@ const RegistrationForm: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div>
                   <label className="block font-semibold mb-2">
-                    Puntaje Coeficiente Intelectual
+                    Puntaje Coeficiente Intelectual <span className="text-red-600">*</span>
                   </label>
                   <input
                     type="number"
                     name="ci_puntaje"
+                    required
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none transition"
                   />
                 </div>
@@ -751,7 +803,7 @@ const RegistrationForm: React.FC = () => {
                   Grupo Sanguíneo y RH <span className="text-red-600">*</span>
                 </label>
                 <select
-                  name="rh_estudiante"
+                  name="rh"
                   required
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-950 focus:border-transparent outline-none transition"
                 >
