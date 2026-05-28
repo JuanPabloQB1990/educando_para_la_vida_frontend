@@ -4,6 +4,8 @@ import type { LoginRequest, LoginResponse } from '../types/auth';
 export const authService = {
   async login(data: LoginRequest): Promise<LoginResponse> {
     const res = await http.post<{ success: boolean; data: LoginResponse }>('/auth/login', data);
+    console.log(res.data.data);
+    
     return res.data.data;
   },
 

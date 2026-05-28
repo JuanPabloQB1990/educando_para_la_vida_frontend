@@ -15,6 +15,8 @@ import { RoleRoute } from './RoleRoute';
 import DashboardLayout from '../layouts/DashboardLayout';
 
 import DashboardAdminPage from '../pages/admin/DashboardAdminPage';
+import AnioElectivoPage from '../pages/admin/AnioElectivoPage';
+import PagosAdminPage from '../pages/admin/PagosAdminPage';
 import DashboardProfesorPage from '../pages/profesor/DashboardProfesorPage';
 import DashboardEstudiantePage from '../pages/estudiante/DashboardEstudiantePage';
 
@@ -41,11 +43,11 @@ const routes: RouteObject[] = [
             children: [
               { index: true, element: <DashboardAdminPage /> },
               { path: 'usuarios', element: <ComingSoon title="Usuarios" /> },
-              { path: 'anios', element: <ComingSoon title="Años Electivos" /> },
+              { path: 'anios', element: <AnioElectivoPage /> },
               { path: 'matriculas', element: <ComingSoon title="Matrículas" /> },
               { path: 'cargas', element: <ComingSoon title="Cargas Académicas" /> },
               { path: 'notas', element: <ComingSoon title="Notas y Asistencias" /> },
-              { path: 'pagos', element: <ComingSoon title="Pagos y Rubros" /> },
+              { path: 'pagos', element: <PagosAdminPage /> },
             ],
           },
         ],
