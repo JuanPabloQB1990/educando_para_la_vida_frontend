@@ -16,10 +16,13 @@ export interface PagoAdmin {
   // rubro
   nombreRubro: string;
   // estudiante_periodo
+  idEstudiantePeriodo: string;
   idEstudiante: string;
   fechaInscripcion: string | null;
   fileCompromiso: string;
   fileCertificadoGrados: string | null;
+  nombreTipoEstudio: string | null;
+  tiempoValidacion: number | null;
   // estudiante
   fechaNacimiento: string | null;
   edad: number | null;
@@ -102,9 +105,37 @@ export interface PagoAdminFilters {
   fechaPagoReal?: string;
   estado?: string;
   fechaVerificacion?: string;
+  noDocumento?: string;
+  padreCedula?: string;
+  madreCedula?: string;
+  acudienteCedula?: string;
 }
 
 export interface VerificarPagoDto {
   accion: 'aprobado' | 'rechazado';
+  idObligacionPago?: string;
+  montoPagado?: string;
   observaciones?: string;
+}
+
+export interface MatricularAnioDto {
+  idAnioElectivo: string;
+  idRubro: string;
+  meses: number[];
+}
+
+export interface GradoMatriculado {
+  idEstudiantePeriodo: string;
+  idGradoEducacion: string;
+  estado: 'finalizado' | 'pendiente' | 'retirado';
+  nombreGrado: string;
+}
+
+export interface ObligacionPagoEstudiante {
+  idObligacionPago: string;
+  idRubro: string;
+  montoCuota: string;
+  fechaVencimiento: string | null;
+  estado: 'pendiente' | 'pagado' | 'vencido';
+  nombreRubro: string;
 }

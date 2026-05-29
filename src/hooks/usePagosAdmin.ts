@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import { pagoAdminService } from '../services/pagoAdminService';
-import type { PagoAdminFilters, VerificarPagoDto } from '../types/pago';
+import type { PagoAdminFilters, VerificarPagoDto, MatricularAnioDto, GradoMatriculado, ObligacionPagoEstudiante } from '../types/pago';
 
 const QK_PAGOS = 'pagosAdmin';
 const QK_RUBROS = 'rubros';
@@ -33,6 +33,38 @@ export function useVerificarPago() {
     },
     onError: (error: unknown) => {
       const msg = extractErrorMessage(error, 'Error al verificar el comprobante');
+      toast.error(msg);
+    },
+  });
+}
+
+export function useGradosByPeriodo(idEstudiantePeriodo: string | null) {
+  return useQuery<GradoMatriculado[]>({
+    queryKey: ['gradosByPeriodo', idEstudiantePeriodo],
+    queryFn: () => pagoAdminService.getGradosByPeriodo(idEstudiantePeriodo!),
+    enabled: !!idEstudiantePeriodo,
+  });
+}
+
+export function useObligacionesByPeriodo(idEstudiantePeriodo: string | null) {
+  return useQuery<ObligacionPagoEstudiante[]>({
+    queryKey: ['obligacionesByPeriodo', idEstudiantePeriodo],
+    queryFn: () => pagoAdminService.getObligacionesByPeriodo(idEstudiantePeriodo!),
+    enabled: !!idEstudiantePeriodo,
+  });
+}
+
+export function useMatricularAnio() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, dto }: { id: string; dto: MatricularAnioDto }) =>
+      pagoAdminService.matricularAnio(id, dto),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [QK_PAGOS] });
+      toast.success('Obligaciones de pago creadas exitosamente.');
+    },
+    onError: (error: unknown) => {
+      const msg = extractErrorMessage(error, 'Error al matricular al estudiante');
       toast.error(msg);
     },
   });

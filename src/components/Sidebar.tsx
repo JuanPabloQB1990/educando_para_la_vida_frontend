@@ -45,27 +45,40 @@ const navByRole: Record<RolNombre, NavItem[]> = {
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
-export function Sidebar({ isOpen, onClose }: Props) {
+export function Sidebar({ isOpen, onClose, collapsed = false, onToggleCollapse }: Props) {
   const { user } = useAuth();
   const items = user ? navByRole[user.nombreRol] : [];
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-30 w-64 bg-indigo-900 text-white flex flex-col transition-transform duration-200
-        ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static lg:z-auto`}
+      className={`fixed inset-y-0 left-0 z-30 w-64 bg-indigo-900 text-white flex flex-col transition-all duration-200
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+        lg:translate-x-0 lg:static lg:z-auto
+        ${collapsed ? 'lg:w-0 lg:overflow-hidden' : 'lg:w-64'}`}
     >
       {/* Logo */}
       <div className="h-16 flex items-center px-6 border-b border-indigo-700 shrink-0">
         <span className="font-bold text-lg leading-tight">Educando Para<br />La Vida</span>
-        <button
-          onClick={onClose}
-          className="ml-auto lg:hidden text-indigo-300 hover:text-white"
-          aria-label="Cerrar menú"
-        >
-          <IconX />
-        </button>
+        <div className="ml-auto flex items-center gap-1">
+          <button
+            onClick={onToggleCollapse}
+            className="hidden lg:flex items-center justify-center text-indigo-300 hover:text-white p-1 rounded"
+            aria-label="Colapsar menú"
+          >
+            <IconChevronLeft />
+          </button>
+          <button
+            onClick={onClose}
+            className="lg:hidden text-indigo-300 hover:text-white"
+            aria-label="Cerrar menú"
+          >
+            <IconX />
+          </button>
+        </div>
       </div>
 
       {/* Nav */}
@@ -176,6 +189,13 @@ function IconX() {
   return (
     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
       <path d="M18 6L6 18M6 6l12 12" />
+    </svg>
+  );
+}
+function IconChevronLeft() {
+  return (
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
+      <path d="M15 18l-6-6 6-6" />
     </svg>
   );
 }

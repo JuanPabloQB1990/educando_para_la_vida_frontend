@@ -5,6 +5,7 @@ import { DashboardHeader } from '../components/DashboardHeader';
 
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
@@ -16,10 +17,24 @@ export default function DashboardLayout() {
         />
       )}
 
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed((v) => !v)}
+      />
 
       <div className="flex-1 flex flex-col min-w-0">
-        <DashboardHeader onMenuClick={() => setSidebarOpen(true)} />
+        <DashboardHeader
+          onMenuClick={() => {
+            if (sidebarCollapsed) {
+              setSidebarCollapsed(false);
+            } else {
+              setSidebarOpen(true);
+            }
+          }}
+          sidebarCollapsed={sidebarCollapsed}
+        />
         <main className="flex-1 p-6 overflow-auto">
           <Outlet />
         </main>

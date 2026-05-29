@@ -5,9 +5,10 @@ import { useAuth } from '../hooks/useAuth';
 
 interface Props {
   onMenuClick: () => void;
+  sidebarCollapsed?: boolean;
 }
 
-export function DashboardHeader({ onMenuClick }: Props) {
+export function DashboardHeader({ onMenuClick, sidebarCollapsed = false }: Props) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -22,7 +23,7 @@ export function DashboardHeader({ onMenuClick }: Props) {
       {/* Hamburger */}
       <button
         onClick={onMenuClick}
-        className="lg:hidden p-1 rounded text-gray-500 hover:bg-gray-100"
+        className={`p-1 rounded text-gray-500 hover:bg-gray-100 ${sidebarCollapsed ? '' : 'lg:hidden'}`}
         aria-label="Abrir menú"
       >
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="w-6 h-6">
