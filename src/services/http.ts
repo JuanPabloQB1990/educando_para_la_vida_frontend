@@ -37,7 +37,11 @@ http.interceptors.response.use(
   (res: AxiosResponse) => res,
   async (error) => {
     const original = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
-    if (error.response?.status !== 401 || original._retry) return Promise.reject(error);
+    if (
+      error.response?.status !== 401 ||
+      original._retry ||
+      original.url?.includes('/auth/login')
+    ) return Promise.reject(error);
 
     if (isRefreshing) {
       return new Promise<string>((resolve, reject) => {

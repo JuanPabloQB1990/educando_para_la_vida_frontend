@@ -38,19 +38,19 @@ export function useVerificarPago() {
   });
 }
 
-export function useGradosByPeriodo(idEstudiantePeriodo: string | null) {
+export function useGradosByMatricula(idEstudianteMatricula: string | null) {
   return useQuery<GradoMatriculado[]>({
-    queryKey: ['gradosByPeriodo', idEstudiantePeriodo],
-    queryFn: () => pagoAdminService.getGradosByPeriodo(idEstudiantePeriodo!),
-    enabled: !!idEstudiantePeriodo,
+    queryKey: ['gradosByMatricula', idEstudianteMatricula],
+    queryFn: () => pagoAdminService.getGradosByMatricula(idEstudianteMatricula!),
+    enabled: !!idEstudianteMatricula,
   });
 }
 
-export function useObligacionesByPeriodo(idEstudiantePeriodo: string | null) {
+export function useObligacionesByMatricula(idEstudianteMatricula: string | null) {
   return useQuery<ObligacionPagoEstudiante[]>({
-    queryKey: ['obligacionesByPeriodo', idEstudiantePeriodo],
-    queryFn: () => pagoAdminService.getObligacionesByPeriodo(idEstudiantePeriodo!),
-    enabled: !!idEstudiantePeriodo,
+    queryKey: ['obligacionesByMatricula', idEstudianteMatricula],
+    queryFn: () => pagoAdminService.getObligacionesByMatricula(idEstudianteMatricula!),
+    enabled: !!idEstudianteMatricula,
   });
 }
 
@@ -59,12 +59,29 @@ export function useMatricularAnio() {
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: MatricularAnioDto }) =>
       pagoAdminService.matricularAnio(id, dto),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: [QK_PAGOS] });
+      qc.invalidateQueries({ queryKey: ['obligacionesByMatricula', variables.id] });
       toast.success('Obligaciones de pago creadas exitosamente.');
     },
     onError: (error: unknown) => {
       const msg = extractErrorMessage(error, 'Error al matricular al estudiante');
+      toast.error(msg);
+    },
+  });
+}
+
+export function useEliminarObligacion() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id }: { id: string; idEstudianteMatricula: string }) =>
+      pagoAdminService.deleteObligacion(id),
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: ['obligacionesByMatricula', variables.idEstudianteMatricula] });
+      toast.success('Obligación eliminada.');
+    },
+    onError: (error: unknown) => {
+      const msg = extractErrorMessage(error, 'Error al eliminar la obligación');
       toast.error(msg);
     },
   });

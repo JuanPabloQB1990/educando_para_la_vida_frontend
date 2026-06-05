@@ -1,6 +1,6 @@
 export interface Rubro {
-  idRubro: string;
-  nombreRubro: string;
+  id: string;
+  nombre: string;
   descripcion: string | null;
   montoBase: string | null;
 }

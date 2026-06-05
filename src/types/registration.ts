@@ -1,6 +1,6 @@
 // Tipos para el CRUD de Documentos
 export interface TipoDocumento {
-  idTipoDocumento: string;
+  id: string;
   nombre: string;
 }
 
@@ -13,16 +13,16 @@ export interface ApiResponse<T> {
 }
 
 export interface TipoEstudio {
-  idTipoEstudio: string;
+  id: string;
   nombre: string;
 }
 
 export interface TipoGrado {
-  idGradoEducacion: string;
+  id: string;
   nombre: string;
 }
 
 export interface TiempoValidacion {
-  idTiempoValidacion: string;
+  id: string;
   tiempo: string;
 }

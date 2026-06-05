@@ -17,8 +17,16 @@ import DashboardLayout from '../layouts/DashboardLayout';
 import DashboardAdminPage from '../pages/admin/DashboardAdminPage';
 import AnioElectivoPage from '../pages/admin/AnioElectivoPage';
 import PagosAdminPage from '../pages/admin/PagosAdminPage';
+import UsuariosAdminPage from '../pages/admin/UsuariosAdminPage';
 import DashboardProfesorPage from '../pages/profesor/DashboardProfesorPage';
 import DashboardEstudiantePage from '../pages/estudiante/DashboardEstudiantePage';
+import DashboardSecretariaPage from '../pages/secretaria/DashboardSecretariaPage';
+import MateriasAdminPage from '../pages/admin/MateriasAdminPage';
+import GradosEducacionAdminPage from '../pages/admin/GradosEducacionAdminPage';
+import PlanEstudioAdminPage from '../pages/admin/PlanEstudioAdminPage';
+import CargasAdminPage from '../pages/admin/CargasAdminPage';
+import TipoEstudioAdminPage from '../pages/admin/TipoEstudioAdminPage';
+import DireccionGradoAdminPage from '../pages/admin/DireccionGradoAdminPage';
 
 const routes: RouteObject[] = [
   // Públicas
@@ -42,10 +50,38 @@ const routes: RouteObject[] = [
             element: <DashboardLayout />,
             children: [
               { index: true, element: <DashboardAdminPage /> },
-              { path: 'usuarios', element: <ComingSoon title="Usuarios" /> },
+              { path: 'usuarios', element: <UsuariosAdminPage /> },
               { path: 'anios', element: <AnioElectivoPage /> },
+              { path: 'materias', element: <MateriasAdminPage /> },
+              { path: 'grados', element: <GradosEducacionAdminPage /> },
+              { path: 'plan-estudio', element: <PlanEstudioAdminPage /> },
+              { path: 'tipo-estudio', element: <TipoEstudioAdminPage /> },
+              { path: 'direccion-grado', element: <DireccionGradoAdminPage /> },
               { path: 'matriculas', element: <ComingSoon title="Matrículas" /> },
-              { path: 'cargas', element: <ComingSoon title="Cargas Académicas" /> },
+              { path: 'cargas', element: <CargasAdminPage /> },
+              { path: 'notas', element: <ComingSoon title="Notas y Asistencias" /> },
+              { path: 'pagos', element: <PagosAdminPage /> },
+            ],
+          },
+        ],
+      },
+      // Secretaria
+
+      {
+        element: <RoleRoute roles={['secretari@']} />,
+        children: [
+          {
+            path: '/secretaria',
+            element: <DashboardLayout />,
+            children: [
+              { index: true, element: <DashboardSecretariaPage /> },
+              { path: 'anios', element: <AnioElectivoPage /> },
+              { path: 'materias', element: <MateriasAdminPage /> },
+              { path: 'grados', element: <GradosEducacionAdminPage /> },
+              { path: 'tipo-estudio', element: <TipoEstudioAdminPage /> },
+              { path: 'direccion-grado', element: <DireccionGradoAdminPage /> },
+              { path: 'matriculas', element: <ComingSoon title="Matrículas" /> },
+              { path: 'cargas', element: <CargasAdminPage /> },
               { path: 'notas', element: <ComingSoon title="Notas y Asistencias" /> },
               { path: 'pagos', element: <PagosAdminPage /> },
             ],

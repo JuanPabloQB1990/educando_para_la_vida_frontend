@@ -1,5 +1,5 @@
 export interface AnioElectivo {
-  idAnioElectivo: string;
+  id: string;
   anio: number;
   estado: 'activo' | 'cerrado';
 }

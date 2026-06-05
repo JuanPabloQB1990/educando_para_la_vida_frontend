@@ -13,6 +13,11 @@ const adminNav: NavItem[] = [
   { label: 'Dashboard', to: '/admin', icon: <IconGrid /> },
   { label: 'Usuarios', to: '/admin/usuarios', icon: <IconUsers /> },
   { label: 'Años Electivos', to: '/admin/anios', icon: <IconCalendar /> },
+  { label: 'Materias', to: '/admin/materias', icon: <IconBook /> },
+  { label: 'Grados', to: '/admin/grados', icon: <IconLayers /> },
+  { label: 'Plan de Estudio', to: '/admin/plan-estudio', icon: <IconBookOpen /> },
+  { label: 'Tipos de Estudio', to: '/admin/tipo-estudio', icon: <IconLayers /> },
+  { label: 'Dirección de Grado', to: '/admin/direccion-grado', icon: <IconUserCheck /> },
   { label: 'Matrículas', to: '/admin/matriculas', icon: <IconClipboard /> },
   { label: 'Cargas Académicas', to: '/admin/cargas', icon: <IconBook /> },
   { label: 'Notas y Asistencias', to: '/admin/notas', icon: <IconChart /> },
@@ -36,10 +41,24 @@ const estudianteNav: NavItem[] = [
   { label: 'Classroom', to: '/estudiante/classroom', icon: <IconFolder /> },
 ];
 
+const secretariaNav: NavItem[] = [
+  { label: 'Dashboard', to: '/secretaria', icon: <IconGrid /> },
+  { label: 'Años Electivos', to: '/secretaria/anios', icon: <IconCalendar /> },
+  { label: 'Materias', to: '/secretaria/materias', icon: <IconBook /> },
+  { label: 'Grados', to: '/secretaria/grados', icon: <IconLayers /> },
+  { label: 'Tipos de Estudio', to: '/secretaria/tipo-estudio', icon: <IconLayers /> },
+  { label: 'Dirección de Grado', to: '/secretaria/direccion-grado', icon: <IconUserCheck /> },
+  { label: 'Matrículas', to: '/secretaria/matriculas', icon: <IconClipboard /> },
+  { label: 'Cargas Académicas', to: '/secretaria/cargas', icon: <IconBook /> },
+  { label: 'Notas y Asistencias', to: '/secretaria/notas', icon: <IconChart /> },
+  { label: 'Pagos y Rubros', to: '/secretaria/pagos', icon: <IconCash /> },
+];
+
 const navByRole: Record<RolNombre, NavItem[]> = {
   admin: adminNav,
   profesor: profesorNav,
   estudiante: estudianteNav,
+  'secretari@': secretariaNav,
 };
 
 interface Props {
@@ -88,7 +107,7 @@ export function Sidebar({ isOpen, onClose, collapsed = false, onToggleCollapse }
             <li key={item.to}>
               <NavLink
                 to={item.to}
-                end={item.to === '/admin' || item.to === '/profesor' || item.to === '/estudiante'}
+                end={item.to === '/admin' || item.to === '/profesor' || item.to === '/estudiante' || item.to === '/secretaria'}
                 onClick={onClose}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
@@ -155,6 +174,20 @@ function IconBook() {
     </svg>
   );
 }
+function IconLayers() {
+  return (
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="w-full h-full">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" />
+    </svg>
+  );
+}
+function IconBookOpen() {
+  return (
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="w-full h-full">
+      <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z" /><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" />
+    </svg>
+  );
+}
 function IconChart() {
   return (
     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="w-full h-full">
@@ -196,6 +229,14 @@ function IconChevronLeft() {
   return (
     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
       <path d="M15 18l-6-6 6-6" />
+    </svg>
+  );
+}
+function IconUserCheck() {
+  return (
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="w-full h-full">
+      <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="8.5" cy="7" r="4" />
+      <polyline points="17 11 19 13 23 9" />
     </svg>
   );
 }

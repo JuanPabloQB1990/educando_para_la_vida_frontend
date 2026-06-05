@@ -24,7 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const payload = decodeJwtPayload(token);
       if (payload && payload.exp * 1000 > Date.now()) {
         setUser({
-          idUsuario: payload.idUsuario,
+          id: payload.id,
           idRol: payload.idRol,
           nombreRol: payload.nombreRol,
           email: payload.email,

@@ -34,6 +34,7 @@ export const getTipoEstudios = async (): Promise<TipoEstudio[]> => {
   try {
     const response = await registrationApi.get<ApiResponse<TipoEstudio[]>>(config.api.endpoints.tipoEstudio);
     const data = getResponseData<TipoEstudio[]>(response);
+    console.log('Tipos de Estudio obtenidos:', data);
     return data;
   } catch (error) {
     if (axios.isAxiosError(error)) {

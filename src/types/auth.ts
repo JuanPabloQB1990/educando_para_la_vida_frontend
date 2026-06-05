@@ -1,7 +1,7 @@
-export type RolNombre = 'admin' | 'profesor' | 'estudiante';
+export type RolNombre = 'admin' | 'profesor' | 'estudiante' | 'secretari@';
 
 export interface JwtPayload {
-  idUsuario: string;
+  id: string;
   idRol: string;
   nombreRol: RolNombre;
   email: string;
@@ -10,7 +10,7 @@ export interface JwtPayload {
 }
 
 export interface AuthUser {
-  idUsuario: string;
+  id: string;
   idRol: string;
   nombreRol: RolNombre;
   email: string;

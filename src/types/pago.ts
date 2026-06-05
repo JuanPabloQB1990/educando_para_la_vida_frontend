@@ -15,8 +15,8 @@ export interface PagoAdmin {
   estadoObligacion: 'pendiente' | 'pagado' | 'vencido';
   // rubro
   nombreRubro: string;
-  // estudiante_periodo
-  idEstudiantePeriodo: string;
+  // estudiante_matricula
+  idEstudianteMatricula: string;
   idEstudiante: string;
   fechaInscripcion: string | null;
   fileCompromiso: string;
@@ -125,7 +125,7 @@ export interface MatricularAnioDto {
 }
 
 export interface GradoMatriculado {
-  idEstudiantePeriodo: string;
+  idEstudianteMatricula: string;
   idGradoEducacion: string;
   estado: 'finalizado' | 'pendiente' | 'retirado';
   nombreGrado: string;

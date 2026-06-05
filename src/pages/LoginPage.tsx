@@ -18,6 +18,7 @@ const roleRedirect: Record<RolNombre, string> = {
   admin: '/admin',
   profesor: '/profesor',
   estudiante: '/estudiante',
+  'secretari@': '/secretaria',
 };
 
 export default function LoginPage() {
@@ -41,8 +42,12 @@ export default function LoginPage() {
         const payload = JSON.parse(atob(stored.split('.')[1]));
         navigate(roleRedirect[payload.nombreRol as RolNombre] ?? '/login', { replace: true });
       }
-    } catch {
-      toast.error('Credenciales incorrectas. Verifique su correo y contraseña.');
+    } catch(error: unknown) {
+      const msg =
+        (error as { response?: { data?: { error?: { message?: string } } } })
+          ?.response?.data?.error?.message ??
+        'Error al iniciar sesión. Inténtelo de nuevo.';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

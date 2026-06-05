@@ -20,21 +20,25 @@ export const pagoAdminService = {
     return res.data.data;
   },
 
-  async matricularAnio(idEstudiantePeriodo: string, dto: MatricularAnioDto): Promise<void> {
-    await http.post(`/gestion/estudiante_periodo/${idEstudiantePeriodo}/matricular-anio`, dto);
+  async matricularAnio(idEstudianteMatricula: string, dto: MatricularAnioDto): Promise<void> {
+    await http.post(`/gestion/estudiante_matricula/${idEstudianteMatricula}/matricular-anio`, dto);
   },
 
-  async getGradosByPeriodo(idEstudiantePeriodo: string): Promise<GradoMatriculado[]> {
+  async getGradosByMatricula(idEstudianteMatricula: string): Promise<GradoMatriculado[]> {
     const res = await http.get<{ success: boolean; data: GradoMatriculado[] }>(
-      `/gestion/estudiante_periodo/${idEstudiantePeriodo}/grados`
+      `/gestion/estudiante_matricula/${idEstudianteMatricula}/grados`
     );
     return res.data.data;
   },
 
-  async getObligacionesByPeriodo(idEstudiantePeriodo: string): Promise<ObligacionPagoEstudiante[]> {
+  async getObligacionesByMatricula(idEstudianteMatricula: string): Promise<ObligacionPagoEstudiante[]> {
     const res = await http.get<{ success: boolean; data: ObligacionPagoEstudiante[] }>(
-      `/gestion/estudiante_periodo/${idEstudiantePeriodo}/obligaciones`
+      `/gestion/estudiante_matricula/${idEstudianteMatricula}/obligaciones`
     );
     return res.data.data;
+  },
+
+  async deleteObligacion(id: string): Promise<void> {
+    await http.delete(`/gestion/obligacion_pago/${id}`);
   },
 };

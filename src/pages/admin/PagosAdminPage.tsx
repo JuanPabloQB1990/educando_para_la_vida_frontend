@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { usePagosAdmin, useRubros, useVerificarPago, useMatricularAnio, useGradosByPeriodo, useObligacionesByPeriodo } from '../../hooks/usePagosAdmin';
+import { usePagosAdmin, useRubros, useVerificarPago, useMatricularAnio, useGradosByMatricula, useObligacionesByMatricula, useEliminarObligacion } from '../../hooks/usePagosAdmin';
 import { useAniosElectivos } from '../../hooks/useAnioElectivo';
 import type { PagoAdmin, PagoAdminFilters, MatricularAnioDto } from '../../types/pago';
 import type { AnioElectivo } from '../../types/anioElectivo';
@@ -352,7 +352,7 @@ function ModalVerificar({ pago, onClose, onConfirm, isPending }: ModalVerificarP
   const [montoPagado, setMontoPagado] = useState(pago.montoPagado ?? '');
   const [observaciones, setObservaciones] = useState(pago.observaciones ?? '');
 
-  const { data: obligaciones, isLoading: loadingObligaciones } = useObligacionesByPeriodo(pago.idEstudiantePeriodo);
+  const { data: obligaciones, isLoading: loadingObligaciones } = useObligacionesByMatricula(pago.idEstudianteMatricula);
 
   // Mostrar pendiente/vencido + la obligación actual aunque esté pagada
   const obligacionesFiltradas = obligaciones
@@ -485,26 +485,28 @@ interface ModalMatricularAnioProps {
   anios: AnioElectivo[];
   rubros: Rubro[];
   onClose: () => void;
-  onConfirm: (dto: MatricularAnioDto) => void;
+  onConfirm: (dto: MatricularAnioDto) => Promise<void>;
+  onEliminarObligacion: (id: string) => Promise<void>;
   isPending: boolean;
+  isDeletingObligacion: boolean;
 }
 
-function ModalMatricularAnio({ pago, anios, rubros, onClose, onConfirm, isPending }: ModalMatricularAnioProps) {
+function ModalMatricularAnio({ pago, anios, rubros, onClose, onConfirm, onEliminarObligacion, isPending, isDeletingObligacion }: ModalMatricularAnioProps) {
   const [idAnioElectivo, setIdAnioElectivo] = useState('');
   const [idRubro, setIdRubro] = useState('');
   const [meses, setMeses] = useState<number[]>([]);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  const { data: grados, isLoading: loadingGrados } = useGradosByPeriodo(pago.idEstudiantePeriodo);
-  const { data: obligaciones, isLoading: loadingObligaciones } = useObligacionesByPeriodo(pago.idEstudiantePeriodo);
-
+  const { data: grados, isLoading: loadingGrados } = useGradosByMatricula(pago.idEstudianteMatricula);
+  const { data: obligaciones, isLoading: loadingObligaciones } = useObligacionesByMatricula(pago.idEstudianteMatricula);
+  
   const toggleMes = (index: number) => {
     setMeses((prev) =>
       prev.includes(index) ? prev.filter((m) => m !== index) : [...prev, index]
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errs: Record<string, string> = {};
     if (!idAnioElectivo) errs.idAnioElectivo = 'Seleccione un año electivo';
@@ -514,7 +516,8 @@ function ModalMatricularAnio({ pago, anios, rubros, onClose, onConfirm, isPendin
       setFormErrors(errs);
       return;
     }
-    onConfirm({ idAnioElectivo, idRubro, meses: [...meses].sort((a, b) => a - b) });
+    await onConfirm({ idAnioElectivo, idRubro, meses: [...meses].sort((a, b) => a - b) });
+    setMeses([]);
   };
 
   const estadoGradoBadge: Record<string, string> = {
@@ -600,6 +603,7 @@ function ModalMatricularAnio({ pago, anios, rubros, onClose, onConfirm, isPendin
                       <th className="text-left px-2 py-1.5 font-medium">Rubro</th>
                       <th className="text-left px-2 py-1.5 font-medium">Vencimiento</th>
                       <th className="text-left px-2 py-1.5 font-medium">Estado</th>
+                      <th className="text-left px-2 py-1.5 font-medium">Acción</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -613,6 +617,16 @@ function ModalMatricularAnio({ pago, anios, rubros, onClose, onConfirm, isPendin
                           <span className={`inline-block px-2 py-0.5 rounded-full font-medium capitalize ${estadoObligacionBadge[ob.estado] ?? 'bg-gray-100 text-gray-600'}`}>
                             {ob.estado}
                           </span>
+                        </td>
+                        <td className="px-2 py-1.5">
+                          <button
+                            type="button"
+                            onClick={() => onEliminarObligacion(ob.idObligacionPago)}
+                            disabled={isDeletingObligacion}
+                            className="text-red-500 hover:text-red-700 text-xs font-medium disabled:opacity-50"
+                          >
+                            Eliminar
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -638,7 +652,7 @@ function ModalMatricularAnio({ pago, anios, rubros, onClose, onConfirm, isPendin
               >
                 <option value="">Seleccione un año</option>
                 {anios.map((a) => (
-                  <option key={a.idAnioElectivo} value={a.idAnioElectivo}>
+                  <option key={a.id} value={a.id}>
                     {a.anio} — {a.estado}
                   </option>
                 ))}
@@ -660,8 +674,8 @@ function ModalMatricularAnio({ pago, anios, rubros, onClose, onConfirm, isPendin
               >
                 <option value="">Seleccione un rubro</option>
                 {rubros.map((r) => (
-                  <option key={r.idRubro} value={r.idRubro}>
-                    {r.nombreRubro}{r.montoBase ? ` — ${formatMonto(r.montoBase)}` : ''}
+                  <option key={r.id} value={r.id}>
+                    {r.nombre}{r.montoBase ? ` — ${formatMonto(r.montoBase)}` : ''}
                   </option>
                 ))}
               </select>
@@ -709,7 +723,7 @@ function ModalMatricularAnio({ pago, anios, rubros, onClose, onConfirm, isPendin
                 disabled={isPending}
                 className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
               >
-                {isPending ? 'Procesando...' : 'Confirmar'}
+                {isPending ? 'Agregando...' : 'Agregar'}
               </button>
             </div>
           </form>
@@ -732,6 +746,7 @@ export default function PagosAdminPage() {
   const { data: anios } = useAniosElectivos();
   const verificarMutation = useVerificarPago();
   const matricularMutation = useMatricularAnio();
+  const eliminarObligacionMutation = useEliminarObligacion();
 
   const aplicarFiltros = () => setFilters({ ...draft });
 
@@ -767,8 +782,8 @@ export default function PagosAdminPage() {
             >
               <option value="">Todos</option>
               {rubros?.map((r) => (
-                <option key={r.idRubro} value={r.idRubro}>
-                  {r.nombreRubro}
+                <option key={r.id} value={r.id}>
+                  {r.nombre}
                 </option>
               ))}
             </select>
@@ -977,12 +992,18 @@ export default function PagosAdminPage() {
           onClose={() => setMatriculando(null)}
           onConfirm={async (dto) => {
             await matricularMutation.mutateAsync({
-              id: matriculando.idEstudiantePeriodo,
+              id: matriculando.idEstudianteMatricula,
               dto,
             });
-            setMatriculando(null);
+          }}
+          onEliminarObligacion={async (id) => {
+            await eliminarObligacionMutation.mutateAsync({
+              id,
+              idEstudianteMatricula: matriculando.idEstudianteMatricula,
+            });
           }}
           isPending={matricularMutation.isPending}
+          isDeletingObligacion={eliminarObligacionMutation.isPending}
         />
       )}
     </div>
