@@ -4,6 +4,7 @@ import { useUsuarios } from '../../hooks/useUsuarios';
 import { useGradosEducacion } from '../../hooks/useGradosEducacion';
 import { useMaterias } from '../../hooks/useMaterias';
 import { useAniosElectivos } from '../../hooks/useAnioElectivo';
+import { useBloques } from '../../hooks/useBloque';
 import type { CargaAcademica } from '../../types/cargaAcademica';
 
 function SkeletonRow() {
@@ -20,7 +21,7 @@ function SkeletonRow() {
 
 interface ModalCrearProps {
   onClose: () => void;
-  onSubmit: (data: { idUsuario: string; idMateria: string; idGradoEducacion: string; idAnioElectivo: string }) => void;
+  onSubmit: (data: { idUsuario: string; idMateria: string; idGradoEducacion: string; idAnioElectivo: string; idBloque?: string | null }) => void;
   isPending: boolean;
 }
 
@@ -29,6 +30,7 @@ function ModalCrear({ onClose, onSubmit, isPending }: ModalCrearProps) {
   const { data: grados } = useGradosEducacion();
   const { data: materias } = useMaterias();
   const { data: anios } = useAniosElectivos();
+  const { data: bloques } = useBloques();
 
   const profesores = useMemo(
     () => (usuarios ?? []).filter((u) => u.nombreRol === 'profesor'),
@@ -39,11 +41,12 @@ function ModalCrear({ onClose, onSubmit, isPending }: ModalCrearProps) {
   const [idMateria, setIdMateria] = useState('');
   const [idGradoEducacion, setIdGradoEducacion] = useState('');
   const [idAnioElectivo, setIdAnioElectivo] = useState('');
+  const [idBloque, setIdBloque] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!idUsuario || !idMateria || !idGradoEducacion || !idAnioElectivo) return;
-    onSubmit({ idUsuario, idMateria, idGradoEducacion, idAnioElectivo });
+    onSubmit({ idUsuario, idMateria, idGradoEducacion, idAnioElectivo, idBloque: idBloque || null });
   };
 
   const selectCls = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500';
@@ -92,6 +95,17 @@ function ModalCrear({ onClose, onSubmit, isPending }: ModalCrearProps) {
               <option value="">Seleccionar año...</option>
               {anios?.map((a) => (
                 <option key={a.id} value={a.id}>{a.anio}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Bloque <span className="text-gray-400 font-normal">(opcional)</span>
+            </label>
+            <select value={idBloque} onChange={(e) => setIdBloque(e.target.value)} className={selectCls}>
+              <option value="">Sin bloque</option>
+              {bloques?.map((b) => (
+                <option key={b.id} value={b.id}>{b.nombre}</option>
               ))}
             </select>
           </div>
@@ -168,7 +182,7 @@ export default function CargasAdminPage() {
     });
   }, [cargas, filtroProfesor, filtroAnio]);
 
-  const handleCrear = async (data: { idUsuario: string; idMateria: string; idGradoEducacion: string; idAnioElectivo: string }) => {
+  const handleCrear = async (data: { idUsuario: string; idMateria: string; idGradoEducacion: string; idAnioElectivo: string; idBloque?: string | null }) => {
     await createMutation.mutateAsync(data);
     setShowCrear(false);
   };
@@ -229,6 +243,7 @@ export default function CargasAdminPage() {
                 <th className="px-4 py-3 text-left font-semibold text-gray-700">Profesor</th>
                 <th className="px-4 py-3 text-left font-semibold text-gray-700">Grado</th>
                 <th className="px-4 py-3 text-left font-semibold text-gray-700">Materia</th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-700">Bloque</th>
                 <th className="px-4 py-3 text-left font-semibold text-gray-700">Año</th>
                 <th className="px-4 py-3 text-left font-semibold text-gray-700">Acciones</th>
               </tr>
@@ -238,7 +253,7 @@ export default function CargasAdminPage() {
                 Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)
               ) : !cargasVisibles.length ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-gray-400">
+                  <td colSpan={6} className="px-6 py-10 text-center text-gray-400">
                     No hay cargas académicas registradas.
                   </td>
                 </tr>
@@ -248,6 +263,7 @@ export default function CargasAdminPage() {
                     <td className="px-4 py-3 text-gray-900 font-medium">{c.nombreUsuario ?? '—'}</td>
                     <td className="px-4 py-3 text-gray-700">{c.nombreGrado ?? '—'}</td>
                     <td className="px-4 py-3 text-gray-700">{c.nombre ?? '—'}</td>
+                    <td className="px-4 py-3 text-gray-500">{c.nombreBloque ?? '—'}</td>
                     <td className="px-4 py-3 text-gray-500">{c.anio ?? '—'}</td>
                     <td className="px-4 py-3">
                       <button

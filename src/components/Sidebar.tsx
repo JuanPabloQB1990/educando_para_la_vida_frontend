@@ -17,10 +17,12 @@ const adminNav: NavItem[] = [
   { label: 'Grados', to: '/admin/grados', icon: <IconLayers /> },
   { label: 'Plan de Estudio', to: '/admin/plan-estudio', icon: <IconBookOpen /> },
   { label: 'Tipos de Estudio', to: '/admin/tipo-estudio', icon: <IconLayers /> },
+  { label: 'Tiempos de Validación', to: '/admin/tiempo-validacion', icon: <IconClock /> },
   { label: 'Dirección de Grado', to: '/admin/direccion-grado', icon: <IconUserCheck /> },
-  { label: 'Matrículas', to: '/admin/matriculas', icon: <IconClipboard /> },
   { label: 'Cargas Académicas', to: '/admin/cargas', icon: <IconBook /> },
+  { label: 'Matrículas', to: '/admin/matriculas', icon: <IconClipboard /> },
   { label: 'Notas y Asistencias', to: '/admin/notas', icon: <IconChart /> },
+  { label: 'Rubros', to: '/admin/rubros', icon: <IconCash /> },
   { label: 'Pagos y Rubros', to: '/admin/pagos', icon: <IconCash /> },
 ];
 
@@ -47,10 +49,13 @@ const secretariaNav: NavItem[] = [
   { label: 'Materias', to: '/secretaria/materias', icon: <IconBook /> },
   { label: 'Grados', to: '/secretaria/grados', icon: <IconLayers /> },
   { label: 'Tipos de Estudio', to: '/secretaria/tipo-estudio', icon: <IconLayers /> },
+  { label: 'Plan de Estudio', to: '/secretaria/plan-estudio', icon: <IconBookOpen /> },
+  { label: 'Tiempos de Validación', to: '/secretaria/tiempo-validacion', icon: <IconClock /> },
   { label: 'Dirección de Grado', to: '/secretaria/direccion-grado', icon: <IconUserCheck /> },
   { label: 'Matrículas', to: '/secretaria/matriculas', icon: <IconClipboard /> },
   { label: 'Cargas Académicas', to: '/secretaria/cargas', icon: <IconBook /> },
   { label: 'Notas y Asistencias', to: '/secretaria/notas', icon: <IconChart /> },
+  { label: 'Rubros', to: '/secretaria/rubros', icon: <IconCash /> },
   { label: 'Pagos y Rubros', to: '/secretaria/pagos', icon: <IconCash /> },
 ];
 
@@ -229,6 +234,13 @@ function IconChevronLeft() {
   return (
     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
       <path d="M15 18l-6-6 6-6" />
+    </svg>
+  );
+}
+function IconClock() {
+  return (
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="w-full h-full">
+      <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" />
     </svg>
   );
 }

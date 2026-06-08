@@ -24,6 +24,7 @@ export function useCreateCargaAcademica() {
       idMateria: string;
       idGradoEducacion: string;
       idAnioElectivo: string;
+      idBloque?: string | null;
     }) => cargaAcademicaService.create(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [QK] });

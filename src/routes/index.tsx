@@ -27,6 +27,8 @@ import PlanEstudioAdminPage from '../pages/admin/PlanEstudioAdminPage';
 import CargasAdminPage from '../pages/admin/CargasAdminPage';
 import TipoEstudioAdminPage from '../pages/admin/TipoEstudioAdminPage';
 import DireccionGradoAdminPage from '../pages/admin/DireccionGradoAdminPage';
+import TiempoValidacionAdminPage from '../pages/admin/TiempoValidacionAdminPage';
+import RubrosAdminPage from '../pages/admin/RubrosAdminPage';
 
 const routes: RouteObject[] = [
   // Públicas
@@ -56,10 +58,12 @@ const routes: RouteObject[] = [
               { path: 'grados', element: <GradosEducacionAdminPage /> },
               { path: 'plan-estudio', element: <PlanEstudioAdminPage /> },
               { path: 'tipo-estudio', element: <TipoEstudioAdminPage /> },
+              { path: 'tiempo-validacion', element: <TiempoValidacionAdminPage /> },
               { path: 'direccion-grado', element: <DireccionGradoAdminPage /> },
               { path: 'matriculas', element: <ComingSoon title="Matrículas" /> },
               { path: 'cargas', element: <CargasAdminPage /> },
               { path: 'notas', element: <ComingSoon title="Notas y Asistencias" /> },
+              { path: 'rubros', element: <RubrosAdminPage /> },
               { path: 'pagos', element: <PagosAdminPage /> },
             ],
           },
@@ -79,10 +83,13 @@ const routes: RouteObject[] = [
               { path: 'materias', element: <MateriasAdminPage /> },
               { path: 'grados', element: <GradosEducacionAdminPage /> },
               { path: 'tipo-estudio', element: <TipoEstudioAdminPage /> },
+              { path: 'plan-estudio', element: <PlanEstudioAdminPage /> },
+              { path: 'tiempo-validacion', element: <TiempoValidacionAdminPage /> },
               { path: 'direccion-grado', element: <DireccionGradoAdminPage /> },
               { path: 'matriculas', element: <ComingSoon title="Matrículas" /> },
               { path: 'cargas', element: <CargasAdminPage /> },
               { path: 'notas', element: <ComingSoon title="Notas y Asistencias" /> },
+              { path: 'rubros', element: <RubrosAdminPage /> },
               { path: 'pagos', element: <PagosAdminPage /> },
             ],
           },

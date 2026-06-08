@@ -5,6 +5,7 @@ export interface CreateDireccionGradoDto {
   idGradoEducacion: string;
   idUsuario: string;
   idAnioElectivo: string;
+  idBloque?: string | null;
 }
 
 const direccionGradoService = {

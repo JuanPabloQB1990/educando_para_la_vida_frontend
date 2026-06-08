@@ -4,8 +4,10 @@ export interface CargaAcademica {
   idMateria: string;
   idGradoEducacion: string;
   idAnioElectivo: string;
+  idBloque?: string | null;
   nombreUsuario?: string;
   nombreMateria?: string;
   nombreGrado?: string;
+  nombreBloque?: string | null;
   anio?: number;
 }

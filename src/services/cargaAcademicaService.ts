@@ -19,6 +19,7 @@ const cargaAcademicaService = {
     idMateria: string;
     idGradoEducacion: string;
     idAnioElectivo: string;
+    idBloque?: string | null;
   }): Promise<CargaAcademica> {
     const res = await http.post('/docente/carga_academica', data);
     return res.data.data;
