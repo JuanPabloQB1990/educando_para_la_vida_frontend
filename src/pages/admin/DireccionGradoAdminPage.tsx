@@ -231,7 +231,7 @@ export default function DireccionGradoAdminPage() {
   const updateMutation = useUpdateDireccionGrado();
   const deleteMutation = useDeleteDireccionGrado();
 
-  const profesores = (todosUsuarios ?? []).filter((u) => u.nombreRol === 'profesor');
+  const profesores = (todosUsuarios ?? []).filter((u) => u.nombreRol === 'profesor(a)');
   const gradosList = grados ?? [];
   const aniosList = anios ?? [];
   const bloquesList = bloques ?? [];

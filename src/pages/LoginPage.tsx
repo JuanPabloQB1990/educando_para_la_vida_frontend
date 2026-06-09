@@ -16,7 +16,7 @@ type FormValues = z.infer<typeof schema>;
 
 const roleRedirect: Record<RolNombre, string> = {
   admin: '/admin',
-  profesor: '/profesor',
+  'profesor(a)': '/profesor',
   estudiante: '/estudiante',
   'secretari@': '/secretaria',
 };

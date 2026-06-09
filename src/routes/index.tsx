@@ -16,6 +16,7 @@ import DashboardLayout from '../layouts/DashboardLayout';
 
 import DashboardAdminPage from '../pages/admin/DashboardAdminPage';
 import AnioElectivoPage from '../pages/admin/AnioElectivoPage';
+import PeriodosAdminPage from '../pages/admin/PeriodosAdminPage';
 import PagosAdminPage from '../pages/admin/PagosAdminPage';
 import UsuariosAdminPage from '../pages/admin/UsuariosAdminPage';
 import DashboardProfesorPage from '../pages/profesor/DashboardProfesorPage';
@@ -29,6 +30,7 @@ import TipoEstudioAdminPage from '../pages/admin/TipoEstudioAdminPage';
 import DireccionGradoAdminPage from '../pages/admin/DireccionGradoAdminPage';
 import TiempoValidacionAdminPage from '../pages/admin/TiempoValidacionAdminPage';
 import RubrosAdminPage from '../pages/admin/RubrosAdminPage';
+import NotasAdminPage from '../pages/admin/NotasAdminPage';
 
 const routes: RouteObject[] = [
   // Públicas
@@ -54,6 +56,7 @@ const routes: RouteObject[] = [
               { index: true, element: <DashboardAdminPage /> },
               { path: 'usuarios', element: <UsuariosAdminPage /> },
               { path: 'anios', element: <AnioElectivoPage /> },
+              { path: 'periodos', element: <PeriodosAdminPage /> },
               { path: 'materias', element: <MateriasAdminPage /> },
               { path: 'grados', element: <GradosEducacionAdminPage /> },
               { path: 'plan-estudio', element: <PlanEstudioAdminPage /> },
@@ -62,7 +65,7 @@ const routes: RouteObject[] = [
               { path: 'direccion-grado', element: <DireccionGradoAdminPage /> },
               { path: 'matriculas', element: <ComingSoon title="Matrículas" /> },
               { path: 'cargas', element: <CargasAdminPage /> },
-              { path: 'notas', element: <ComingSoon title="Notas y Asistencias" /> },
+              { path: 'notas', element: <NotasAdminPage /> },
               { path: 'rubros', element: <RubrosAdminPage /> },
               { path: 'pagos', element: <PagosAdminPage /> },
             ],
@@ -80,6 +83,7 @@ const routes: RouteObject[] = [
             children: [
               { index: true, element: <DashboardSecretariaPage /> },
               { path: 'anios', element: <AnioElectivoPage /> },
+              { path: 'periodos', element: <PeriodosAdminPage /> },
               { path: 'materias', element: <MateriasAdminPage /> },
               { path: 'grados', element: <GradosEducacionAdminPage /> },
               { path: 'tipo-estudio', element: <TipoEstudioAdminPage /> },
@@ -88,7 +92,7 @@ const routes: RouteObject[] = [
               { path: 'direccion-grado', element: <DireccionGradoAdminPage /> },
               { path: 'matriculas', element: <ComingSoon title="Matrículas" /> },
               { path: 'cargas', element: <CargasAdminPage /> },
-              { path: 'notas', element: <ComingSoon title="Notas y Asistencias" /> },
+              { path: 'notas', element: <NotasAdminPage /> },
               { path: 'rubros', element: <RubrosAdminPage /> },
               { path: 'pagos', element: <PagosAdminPage /> },
             ],
@@ -97,7 +101,7 @@ const routes: RouteObject[] = [
       },
       // Profesor
       {
-        element: <RoleRoute roles={['profesor']} />,
+        element: <RoleRoute roles={['profesor(a)']} />,
         children: [
           {
             path: '/profesor',
@@ -105,7 +109,7 @@ const routes: RouteObject[] = [
             children: [
               { index: true, element: <DashboardProfesorPage /> },
               { path: 'cargas', element: <ComingSoon title="Carga Académica" /> },
-              { path: 'calificaciones', element: <ComingSoon title="Calificaciones" /> },
+              { path: 'calificaciones', element: <NotasAdminPage /> },
               { path: 'asistencia', element: <ComingSoon title="Asistencia" /> },
               { path: 'classroom', element: <ComingSoon title="Classroom" /> },
               { path: 'clase-virtual', element: <ComingSoon title="Link Clase Virtual" /> },

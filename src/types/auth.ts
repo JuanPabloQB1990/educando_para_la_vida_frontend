@@ -1,4 +1,4 @@
-export type RolNombre = 'admin' | 'profesor' | 'estudiante' | 'secretari@';
+export type RolNombre = 'admin' | 'profesor(a)' | 'estudiante' | 'secretari@';
 
 export interface JwtPayload {
   id: string;

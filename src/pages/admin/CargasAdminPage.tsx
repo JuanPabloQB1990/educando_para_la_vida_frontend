@@ -33,7 +33,7 @@ function ModalCrear({ onClose, onSubmit, isPending }: ModalCrearProps) {
   const { data: bloques } = useBloques();
 
   const profesores = useMemo(
-    () => (usuarios ?? []).filter((u) => u.nombreRol === 'profesor'),
+    () => (usuarios ?? []).filter((u) => u.nombreRol === 'profesor(a)'),
     [usuarios]
   );
 
@@ -169,7 +169,7 @@ export default function CargasAdminPage() {
   const deleteMutation = useDeleteCargaAcademica();
 
   const profesores = useMemo(
-    () => (usuarios ?? []).filter((u) => u.nombreRol === 'profesor'),
+    () => (usuarios ?? []).filter((u) => u.nombreRol === 'profesor(a)'),
     [usuarios]
   );
 

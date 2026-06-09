@@ -13,6 +13,7 @@ const adminNav: NavItem[] = [
   { label: 'Dashboard', to: '/admin', icon: <IconGrid /> },
   { label: 'Usuarios', to: '/admin/usuarios', icon: <IconUsers /> },
   { label: 'Años Electivos', to: '/admin/anios', icon: <IconCalendar /> },
+  { label: 'Periodos', to: '/admin/periodos', icon: <IconCalendar /> },
   { label: 'Materias', to: '/admin/materias', icon: <IconBook /> },
   { label: 'Grados', to: '/admin/grados', icon: <IconLayers /> },
   { label: 'Plan de Estudio', to: '/admin/plan-estudio', icon: <IconBookOpen /> },
@@ -29,7 +30,7 @@ const adminNav: NavItem[] = [
 const profesorNav: NavItem[] = [
   { label: 'Dashboard', to: '/profesor', icon: <IconGrid /> },
   { label: 'Carga Académica', to: '/profesor/cargas', icon: <IconBook /> },
-  { label: 'Calificaciones', to: '/profesor/calificaciones', icon: <IconChart /> },
+  { label: 'Planilla Académica', to: '/profesor/calificaciones', icon: <IconChart /> },
   { label: 'Asistencia', to: '/profesor/asistencia', icon: <IconClipboard /> },
   { label: 'Classroom', to: '/profesor/classroom', icon: <IconFolder /> },
   { label: 'Link Clase Virtual', to: '/profesor/clase-virtual', icon: <IconLink /> },
@@ -46,6 +47,7 @@ const estudianteNav: NavItem[] = [
 const secretariaNav: NavItem[] = [
   { label: 'Dashboard', to: '/secretaria', icon: <IconGrid /> },
   { label: 'Años Electivos', to: '/secretaria/anios', icon: <IconCalendar /> },
+  { label: 'Periodos', to: '/secretaria/periodos', icon: <IconCalendar /> },
   { label: 'Materias', to: '/secretaria/materias', icon: <IconBook /> },
   { label: 'Grados', to: '/secretaria/grados', icon: <IconLayers /> },
   { label: 'Tipos de Estudio', to: '/secretaria/tipo-estudio', icon: <IconLayers /> },
@@ -61,7 +63,7 @@ const secretariaNav: NavItem[] = [
 
 const navByRole: Record<RolNombre, NavItem[]> = {
   admin: adminNav,
-  profesor: profesorNav,
+  'profesor(a)': profesorNav,
   estudiante: estudianteNav,
   'secretari@': secretariaNav,
 };
