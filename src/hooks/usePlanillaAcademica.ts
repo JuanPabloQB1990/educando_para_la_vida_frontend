@@ -6,6 +6,7 @@ import actividadService from '../services/actividadService';
 import actividadMateriaService from '../services/actividadMateriaService';
 import calificacionService from '../services/calificacionService';
 import asistenciaService from '../services/asistenciaService';
+import autoevaluacionService from '../services/autoevaluacionService';
 
 export function usePlanillaAcademica(params: {
   idGradoEducacion?: string;
@@ -51,6 +52,22 @@ export function useActividadMaterias(idActividad?: string) {
   });
 }
 
+export function useUpdateActividad() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, nombre }: { id: string; nombre: string }) =>
+      actividadService.update(id, nombre),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['actividades'] });
+      qc.invalidateQueries({ queryKey: ['planillaAcademica'] });
+      toast.success('Actividad actualizada.');
+    },
+    onError: () => {
+      toast.error('Error al actualizar la actividad.');
+    },
+  });
+}
+
 export function useCreateActividad() {
   const qc = useQueryClient();
   return useMutation({
@@ -89,6 +106,10 @@ export function useCreateActividadMateria() {
   });
 }
 
+function getApiErrorMessage(error: unknown, fallback: string): string {
+  return (error as any)?.response?.data?.error?.message || fallback;
+}
+
 export function useCreateCalificacion() {
   const qc = useQueryClient();
   return useMutation({
@@ -102,8 +123,38 @@ export function useCreateCalificacion() {
       qc.invalidateQueries({ queryKey: ['planillaAcademica'] });
       toast.success('Calificación registrada.');
     },
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, 'Error al registrar la calificación.'));
+    },
+  });
+}
+
+export function useUpdateCalificacion() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { nota: number; observacion?: string | null } }) =>
+      calificacionService.update(id, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['planillaAcademica'] });
+      toast.success('Calificación actualizada.');
+    },
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, 'Error al actualizar la calificación.'));
+    },
+  });
+}
+
+export function useUpdateFechaAsistencia() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { idActividad: string; fechaActual: string; fechaNueva: string }) =>
+      asistenciaService.updateFecha(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['planillaAcademica'] });
+      toast.success('Fecha de sesión actualizada.');
+    },
     onError: () => {
-      toast.error('Error al registrar la calificación.');
+      toast.error('Error al actualizar la fecha.');
     },
   });
 }
@@ -115,8 +166,8 @@ export function useUpsertAsistencia() {
       idEstudiante: string;
       idActividad: string;
       fecha: string;
-      estadoAsistencia: string;
-      observacion?: string;
+      estadoAsistencia: string | null;
+      observacion?: string | null;
     }) => asistenciaService.upsert(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['planillaAcademica'] });
@@ -124,6 +175,26 @@ export function useUpsertAsistencia() {
     },
     onError: () => {
       toast.error('Error al guardar la asistencia.');
+    },
+  });
+}
+
+export function useUpsertAutoevaluacion() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      idEstudiante: string;
+      idPeriodo: string;
+      idGradoEducacion: string;
+      nota: number;
+      observacion?: string | null;
+    }) => autoevaluacionService.upsert(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['planillaAcademica'] });
+      toast.success('Autoevaluación guardada.');
+    },
+    onError: () => {
+      toast.error('Error al guardar la autoevaluación.');
     },
   });
 }

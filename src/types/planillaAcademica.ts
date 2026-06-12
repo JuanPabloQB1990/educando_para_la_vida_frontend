@@ -1,5 +1,6 @@
 export interface PlanillaActividadMateria {
   id: string;
+  idMateria: string;
   nombreMateria: string;
   abreviaturaMateria: string;
 }
@@ -19,7 +20,7 @@ export interface PlanillaCalificacion {
 
 export interface PlanillaAsistencia {
   id: string;
-  estado: string;
+  estado: string | null;
   observacion: string | null;
 }
 
@@ -32,6 +33,9 @@ export interface PlanillaEstudiante {
   asistencias: Record<string, Record<string, PlanillaAsistencia>>;
   totalPresente: number;
   porcentajeAsistencia: number;
+  autoevaluacion: number | null;
+  autoevaluacionId: string | null;
+  autoevaluacionObservacion: string | null;
 }
 
 export interface PlanillaAcademica {

@@ -17,6 +17,11 @@ const actividadService = {
     const res = await http.post('/docente/actividad', data);
     return res.data.data;
   },
+
+  async update(id: string, nombreActividad: string): Promise<Actividad> {
+    const res = await http.put(`/docente/actividad/${id}`, { nombreActividad });
+    return res.data.data;
+  },
 };
 
 export default actividadService;

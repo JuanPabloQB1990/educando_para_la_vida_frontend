@@ -6,18 +6,20 @@ import {
   usePlanillaAcademica,
   useCargasProfesor,
   useActividades,
-  useActividadMaterias,
   useCreateActividad,
+  useUpdateActividad,
   useCreateActividadMateria,
   useCreateCalificacion,
+  useUpdateCalificacion,
   useUpsertAsistencia,
+  useUpdateFechaAsistencia,
+  useUpsertAutoevaluacion,
 } from '../../hooks/usePlanillaAcademica';
 import { useAuth } from '../../hooks/useAuth';
 import { PeriodoEstado } from '../../types/periodo';
 import type { CargaAcademica } from '../../types/cargaAcademica';
 import type { Actividad } from '../../types/actividad';
-import type { ActividadMateria } from '../../types/actividadMateria';
-import type { PlanillaEstudiante } from '../../types/planillaAcademica';
+import type { PlanillaEstudiante, PlanillaActividad, PlanillaActividadMateria } from '../../types/planillaAcademica';
 
 const ESTADO_BG: Record<string, string> = {
   asistio: 'bg-blue-200',
@@ -39,6 +41,62 @@ function formatFechaCorta(fecha: string): string {
   const diaSemana = d.toLocaleDateString('es', { weekday: 'long' });
   const mesNombre = d.toLocaleDateString('es', { month: 'long' });
   return `${diaSemana}, ${d.getDate()} de ${mesNombre}`;
+}
+
+// ─── Modal: Editar nombre de actividad ───────────────────────────────────────
+
+interface ModalEditarActividadProps {
+  actividad: PlanillaActividad;
+  isPending: boolean;
+  onClose: () => void;
+  onSubmit: (nombre: string) => Promise<void>;
+}
+
+function ModalEditarActividad({ actividad, isPending, onClose, onSubmit }: ModalEditarActividadProps) {
+  const [nombre, setNombre] = useState(actividad.nombre);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nombre.trim() || nombre.trim() === actividad.nombre) return;
+    await onSubmit(nombre.trim());
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-sm p-6">
+        <h2 className="text-base font-semibold text-gray-800 mb-4">Editar nombre de actividad</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+            <input
+              type="text"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              required
+              autoFocus
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={isPending || nombre.trim() === actividad.nombre}
+              className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+            >
+              {isPending ? 'Guardando...' : 'Guardar'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 }
 
 // ─── Modal: Nueva Actividad ───────────────────────────────────────────────────
@@ -208,122 +266,59 @@ function ModalNuevaActividadMateria({
   );
 }
 
-// ─── Modal: Nueva Calificación ────────────────────────────────────────────────
+// ─── Modal: Calificación por celda ───────────────────────────────────────────
 
-interface ModalNuevaCalificacionProps {
-  actividades: Actividad[];
-  estudiantes: PlanillaEstudiante[];
-  cargasProfesor: CargaAcademica[];
-  isPending: boolean;
-  onClose: () => void;
-  onSubmit: (data: {
-    idEstudiante: string;
-    idActividadMateria: string;
-    nota: number;
-    observacion?: string;
-  }) => Promise<void>;
+interface CeldaCalificacionTarget {
+  est: PlanillaEstudiante;
+  act: PlanillaActividad;
+  m: PlanillaActividadMateria;
 }
 
-function ModalNuevaCalificacion({
-  actividades,
-  estudiantes,
-  cargasProfesor,
-  isPending,
-  onClose,
-  onSubmit,
-}: ModalNuevaCalificacionProps) {
-  const [idEstudiante, setIdEstudiante] = useState('');
-  const [idActividad, setIdActividad] = useState('');
-  const [idActividadMateria, setIdActividadMateria] = useState('');
-  const [nota, setNota] = useState('');
-  const [observacion, setObservacion] = useState('');
+interface ModalCalificacionCeldaProps {
+  target: CeldaCalificacionTarget;
+  isCreating: boolean;
+  isUpdating: boolean;
+  onClose: () => void;
+  onCreate: (data: { idEstudiante: string; idActividadMateria: string; nota: number; observacion?: string }) => Promise<void>;
+  onUpdate: (id: string, data: { nota: number; observacion?: string | null }) => Promise<void>;
+}
 
-  const { data: actividadMaterias = [] } = useActividadMaterias(idActividad || undefined);
+function ModalCalificacionCelda({ target, isCreating, isUpdating, onClose, onCreate, onUpdate }: ModalCalificacionCeldaProps) {
+  const calExistente = target.est.calificaciones[target.m.id];
+  const [nota, setNota] = useState(calExistente ? String(calExistente.nota) : '');
+  const [observacion, setObservacion] = useState(calExistente?.observacion ?? '');
 
-  const cargasIds = useMemo(() => new Set(cargasProfesor.map((c) => c.id)), [cargasProfesor]);
-  const actividadMateriasFiltradas = useMemo<ActividadMateria[]>(
-    () => actividadMaterias.filter((am) => cargasIds.has(am.idCargaAcademica)),
-    [actividadMaterias, cargasIds]
-  );
-
-  const handleActividadChange = (id: string) => {
-    setIdActividad(id);
-    setIdActividadMateria('');
-  };
+  const isPending = isCreating || isUpdating;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!idEstudiante || !idActividadMateria || !nota) return;
-    const notaNum = parseFloat(nota);
-    if (isNaN(notaNum) || notaNum < 0 || notaNum > 10) return;
-    await onSubmit({
-      idEstudiante,
-      idActividadMateria,
-      nota: notaNum,
-      observacion: observacion.trim() || undefined,
-    });
+    const num = parseFloat(nota);
+    if (isNaN(num) || num < 0 || num > 10) return;
+    if (calExistente) {
+      await onUpdate(calExistente.id, { nota: num, observacion: observacion.trim() || null });
+    } else {
+      await onCreate({
+        idEstudiante: target.est.id,
+        idActividadMateria: target.m.id,
+        nota: num,
+        observacion: observacion.trim() || undefined,
+      });
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
-        <h2 className="text-base font-semibold text-gray-800 mb-4">Nueva Calificación</h2>
+        <h2 className="text-base font-semibold text-gray-800 mb-1">
+          {calExistente ? 'Editar Calificación' : 'Nueva Calificación'}
+        </h2>
+        <p className="text-sm text-gray-500 mb-1">{target.est.nombre}</p>
+        <p className="text-xs text-gray-400 mb-4">
+          {target.act.nombre} · {target.m.nombreMateria}
+        </p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Estudiante *</label>
-            <select
-              value={idEstudiante}
-              onChange={(e) => setIdEstudiante(e.target.value)}
-              required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="">Seleccionar estudiante</option>
-              {estudiantes.map((est) => (
-                <option key={est.id} value={est.id}>
-                  {est.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Actividad *</label>
-            <select
-              value={idActividad}
-              onChange={(e) => handleActividadChange(e.target.value)}
-              required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="">Seleccionar actividad</option>
-              {actividades.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Materia de actividad *
-            </label>
-            <select
-              value={idActividadMateria}
-              onChange={(e) => setIdActividadMateria(e.target.value)}
-              required
-              disabled={!idActividad}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
-            >
-              <option value="">
-                {idActividad ? 'Seleccionar materia' : 'Selecciona una actividad primero'}
-              </option>
-              {actividadMateriasFiltradas.map((am) => (
-                <option key={am.id} value={am.id}>
-                  {am.nombreMateria}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nota *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nota * (0 – 5.0)</label>
             <input
               type="number"
               step="0.1"
@@ -332,7 +327,8 @@ function ModalNuevaCalificacion({
               value={nota}
               onChange={(e) => setNota(e.target.value)}
               required
-              placeholder="ej: 4.5"
+              placeholder="ej: 8.5"
+              autoFocus
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
@@ -341,8 +337,9 @@ function ModalNuevaCalificacion({
             <textarea
               value={observacion}
               onChange={(e) => setObservacion(e.target.value)}
-              rows={2}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              rows={3}
+              placeholder="Opcional..."
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
             />
           </div>
           <div className="flex justify-end gap-2 pt-2">
@@ -367,7 +364,7 @@ function ModalNuevaCalificacion({
   );
 }
 
-// ─── Modal: Nueva Asistencia ──────────────────────────────────────────────────
+// ─── Modal: Registrar Asistencia (masivo) ────────────────────────────────────
 
 const ESTADOS_ASISTENCIA = [
   { value: 'asistio', label: 'Asistió' },
@@ -376,18 +373,20 @@ const ESTADOS_ASISTENCIA = [
   { value: 'retraso', label: 'Retraso' },
 ];
 
+interface AsistenciaBulkItem {
+  idEstudiante: string;
+  idActividad: string;
+  fecha: string;
+  estadoAsistencia: string | null;
+  observacion?: string | null;
+}
+
 interface ModalNuevaAsistenciaProps {
   actividades: Actividad[];
   estudiantes: PlanillaEstudiante[];
   isPending: boolean;
   onClose: () => void;
-  onSubmit: (data: {
-    idEstudiante: string;
-    idActividad: string;
-    fecha: string;
-    estadoAsistencia: string;
-    observacion?: string;
-  }) => Promise<void>;
+  onSubmitBulk: (items: AsistenciaBulkItem[]) => Promise<void>;
 }
 
 function ModalNuevaAsistencia({
@@ -395,24 +394,22 @@ function ModalNuevaAsistencia({
   estudiantes,
   isPending,
   onClose,
-  onSubmit,
+  onSubmitBulk,
 }: ModalNuevaAsistenciaProps) {
-  const [idEstudiante, setIdEstudiante] = useState('');
   const [idActividad, setIdActividad] = useState('');
   const [fecha, setFecha] = useState('');
-  const [estadoAsistencia, setEstadoAsistencia] = useState('asistio');
-  const [observacion, setObservacion] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!idEstudiante || !idActividad || !fecha) return;
-    await onSubmit({
-      idEstudiante,
-      idActividad,
-      fecha,
-      estadoAsistencia,
-      observacion: observacion.trim() || undefined,
-    });
+    if (!idActividad || !fecha) return;
+    await onSubmitBulk(
+      estudiantes.map(est => ({
+        idEstudiante: est.id,
+        idActividad,
+        fecha,
+        estadoAsistencia: null,
+      }))
+    );
   };
 
   return (
@@ -421,34 +418,16 @@ function ModalNuevaAsistencia({
         <h2 className="text-base font-semibold text-gray-800 mb-4">Registrar Asistencia</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Estudiante *</label>
-            <select
-              value={idEstudiante}
-              onChange={(e) => setIdEstudiante(e.target.value)}
-              required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="">Seleccionar estudiante</option>
-              {estudiantes.map((est) => (
-                <option key={est.id} value={est.id}>
-                  {est.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Actividad *</label>
             <select
               value={idActividad}
               onChange={(e) => setIdActividad(e.target.value)}
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
             >
               <option value="">Seleccionar actividad</option>
               {actividades.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.nombre}
-                </option>
+                <option key={a.id} value={a.id}>{a.nombre}</option>
               ))}
             </select>
           </div>
@@ -459,21 +438,89 @@ function ModalNuevaAsistencia({
               value={fecha}
               onChange={(e) => setFecha(e.target.value)}
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
           </div>
+          <p className="text-sm text-gray-500">
+            Se creará la columna de fecha para {estudiantes.length} estudiante(s).
+            Luego edita el estado de cada uno haciendo clic en la celda.
+          </p>
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={isPending}
+              className="px-4 py-2 text-sm text-white bg-teal-600 rounded-lg hover:bg-teal-700 disabled:opacity-50"
+            >
+              {isPending ? 'Guardando...' : 'Guardar'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ─── Modal: Asistencia por celda ─────────────────────────────────────────────
+
+interface CeldaAsistenciaTarget {
+  est: PlanillaEstudiante;
+  act: PlanillaActividad;
+  fecha: string;
+}
+
+interface ModalAsistenciaCeldaProps {
+  target: CeldaAsistenciaTarget;
+  isPending: boolean;
+  onClose: () => void;
+  onSubmit: (data: AsistenciaBulkItem) => Promise<void>;
+}
+
+function ModalAsistenciaCelda({ target, isPending, onClose, onSubmit }: ModalAsistenciaCeldaProps) {
+  const asExistente = target.est.asistencias[target.act.id]?.[target.fecha];
+  const [estado, setEstado] = useState(asExistente?.estado ?? '');
+  const [observacion, setObservacion] = useState(asExistente?.observacion ?? '');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await onSubmit({
+      idEstudiante: target.est.id,
+      idActividad: target.act.id,
+      fecha: target.fecha,
+      estadoAsistencia: estado,
+      observacion: observacion.trim() || undefined,
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+        <h2 className="text-base font-semibold text-gray-800 mb-1">
+          {asExistente ? 'Editar Asistencia' : 'Registrar Asistencia'}
+        </h2>
+        <p className="text-sm text-gray-500 mb-1">{target.est.nombre}</p>
+        <p className="text-xs text-gray-400 mb-4">
+          {target.act.nombre} · {formatFechaCorta(target.fecha)}
+        </p>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Estado *</label>
             <select
-              value={estadoAsistencia}
-              onChange={(e) => setEstadoAsistencia(e.target.value)}
+              value={estado}
+              onChange={(e) => setEstado(e.target.value)}
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              autoFocus
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
             >
-              {ESTADOS_ASISTENCIA.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
+              <option value="">Seleccionar estado</option>
+              {ESTADOS_ASISTENCIA.map(s => (
+                <option key={s.value} value={s.value}>{s.label}</option>
               ))}
             </select>
           </div>
@@ -482,8 +529,9 @@ function ModalNuevaAsistencia({
             <textarea
               value={observacion}
               onChange={(e) => setObservacion(e.target.value)}
-              rows={2}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              rows={3}
+              placeholder="Opcional..."
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
             />
           </div>
           <div className="flex justify-end gap-2 pt-2">
@@ -508,6 +556,149 @@ function ModalNuevaAsistencia({
   );
 }
 
+// ─── Modal: Editar fecha de sesión de asistencia ─────────────────────────────
+
+interface SesionAsistenciaTarget {
+  act: PlanillaActividad;
+  fecha: string;
+}
+
+interface ModalEditarFechaSesionProps {
+  target: SesionAsistenciaTarget;
+  isPending: boolean;
+  onClose: () => void;
+  onSubmit: (fechaNueva: string) => Promise<void>;
+}
+
+function ModalEditarFechaSesion({ target, isPending, onClose, onSubmit }: ModalEditarFechaSesionProps) {
+  const [fechaNueva, setFechaNueva] = useState(target.fecha);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!fechaNueva || fechaNueva === target.fecha) return;
+    await onSubmit(fechaNueva);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-sm p-6">
+        <h2 className="text-base font-semibold text-gray-800 mb-1">Editar fecha de sesión</h2>
+        <p className="text-xs text-gray-400 mb-4">{target.act.nombre}</p>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha actual</label>
+            <p className="text-sm text-gray-600 bg-gray-50 rounded-lg px-3 py-2 border border-gray-200">
+              {formatFechaCorta(target.fecha)}
+            </p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nueva fecha *</label>
+            <input
+              type="date"
+              value={fechaNueva}
+              onChange={(e) => setFechaNueva(e.target.value)}
+              required
+              autoFocus
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={isPending || fechaNueva === target.fecha}
+              className="px-4 py-2 text-sm text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-50"
+            >
+              {isPending ? 'Guardando...' : 'Guardar'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ─── Modal: Autoevaluación ────────────────────────────────────────────────────
+
+interface ModalAutoevaluacionProps {
+  estudiante: PlanillaEstudiante;
+  isPending: boolean;
+  onClose: () => void;
+  onSubmit: (data: { nota: number; observacion?: string | null }) => Promise<void>;
+}
+
+function ModalAutoevaluacion({ estudiante, isPending, onClose, onSubmit }: ModalAutoevaluacionProps) {
+  const [nota, setNota] = useState(
+    estudiante.autoevaluacion !== null ? String(estudiante.autoevaluacion) : ''
+  );
+  const [observacion, setObservacion] = useState(estudiante.autoevaluacionObservacion ?? '');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const num = parseFloat(nota);
+    if (isNaN(num) || num < 0 || num > 10) return;
+    await onSubmit({ nota: num, observacion: observacion.trim() || null });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+        <h2 className="text-base font-semibold text-gray-800 mb-1">Autoevaluación</h2>
+        <p className="text-sm text-gray-500 mb-4">{estudiante.nombre}</p>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nota * (0 – 10)</label>
+            <input
+              type="number"
+              step="0.1"
+              min="0"
+              max="10"
+              value={nota}
+              onChange={(e) => setNota(e.target.value)}
+              required
+              placeholder="ej: 8.5"
+              autoFocus
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Observación</label>
+            <textarea
+              value={observacion}
+              onChange={(e) => setObservacion(e.target.value)}
+              rows={3}
+              placeholder="Opcional..."
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 resize-none"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={isPending}
+              className="px-4 py-2 text-sm text-white bg-amber-600 rounded-lg hover:bg-amber-700 disabled:opacity-50"
+            >
+              {isPending ? 'Guardando...' : 'Guardar'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ─── Página principal ─────────────────────────────────────────────────────────
 
 export default function NotasAdminPage() {
@@ -518,9 +709,13 @@ export default function NotasAdminPage() {
   const [selectedPeriodo, setSelectedPeriodo] = useState<string>('');
   const [selectedGrado, setSelectedGrado] = useState<string>('');
   const [showModalActividad, setShowModalActividad] = useState(false);
+  const [actividadEditar, setActividadEditar] = useState<PlanillaActividad | null>(null);
   const [showModalActividadMateria, setShowModalActividadMateria] = useState(false);
-  const [showModalCalificacion, setShowModalCalificacion] = useState(false);
   const [showModalAsistencia, setShowModalAsistencia] = useState(false);
+  const [celdaCal, setCeldaCal] = useState<CeldaCalificacionTarget | null>(null);
+  const [celdaAsistencia, setCeldaAsistencia] = useState<CeldaAsistenciaTarget | null>(null);
+  const [sesionFecha, setSesionFecha] = useState<SesionAsistenciaTarget | null>(null);
+  const [estudianteAutoeval, setEstudianteAutoeval] = useState<PlanillaEstudiante | null>(null);
 
   const { data: anios = [] } = useAniosElectivos();
   const { data: periodos = [] } = usePeriodosByAnio(selectedAnio);
@@ -570,9 +765,13 @@ export default function NotasAdminPage() {
   );
 
   const createActividad = useCreateActividad();
+  const updateActividad = useUpdateActividad();
   const createActividadMateria = useCreateActividadMateria();
   const createCalificacion = useCreateCalificacion();
+  const updateCalificacion = useUpdateCalificacion();
   const upsertAsistencia = useUpsertAsistencia();
+  const updateFechaAsistencia = useUpdateFechaAsistencia();
+  const upsertAutoevaluacion = useUpsertAutoevaluacion();
 
   const filtersComplete = !!selectedAnio && !!selectedPeriodo && !!selectedGrado;
 
@@ -582,12 +781,32 @@ export default function NotasAdminPage() {
     idPeriodo: selectedPeriodo,
   });
 
+  // Materias únicas en orden de primera aparición (para columnas de nota final)
+  const materiasUnicas = useMemo(() => {
+    if (!planilla) return [];
+    const seen = new Map<string, { idMateria: string; nombre: string; abreviatura: string }>();
+    for (const act of planilla.actividades) {
+      for (const m of act.materias) {
+        if (!seen.has(m.idMateria)) {
+          seen.set(m.idMateria, {
+            idMateria: m.idMateria,
+            nombre: m.nombreMateria,
+            abreviatura: m.abreviaturaMateria,
+          });
+        }
+      }
+    }
+    return Array.from(seen.values());
+  }, [planilla]);
+
   const totalColumnas =
     3 +
     (planilla?.actividades.reduce(
       (s, a) => s + a.materias.length + a.fechasAsistencia.length,
       0
     ) ?? 0) +
+    1 + // Autoevaluación
+    materiasUnicas.length +
     2;
 
   const hayAsistencias = planilla?.actividades.some((a) => a.fechasAsistencia.length > 0) ?? false;
@@ -667,12 +886,6 @@ export default function NotasAdminPage() {
               className="px-3 py-2 text-sm text-white bg-violet-600 rounded-lg hover:bg-violet-700"
             >
               + Mat. Actividad
-            </button>
-            <button
-              onClick={() => setShowModalCalificacion(true)}
-              className="px-3 py-2 text-sm text-white bg-emerald-600 rounded-lg hover:bg-emerald-700"
-            >
-              + Calificación
             </button>
             <button
               onClick={() => setShowModalAsistencia(true)}
@@ -756,16 +969,38 @@ export default function NotasAdminPage() {
                   {planilla.actividades.map((act) => {
                     const span = act.materias.length + act.fechasAsistencia.length;
                     if (span === 0) return null;
+                    const puedeEditarAct = !esProfesor || periodoActivo;
                     return (
                       <th
                         key={act.id}
                         colSpan={span}
-                        className="border border-gray-200 px-2 py-1 text-center font-semibold text-indigo-700 bg-indigo-100 whitespace-nowrap"
+                        onClick={() => puedeEditarAct && setActividadEditar(act)}
+                        title={puedeEditarAct ? 'Clic para editar el nombre de la actividad' : undefined}
+                        className={`border border-gray-200 px-2 py-1 text-center font-semibold text-indigo-700 bg-indigo-100 whitespace-nowrap ${
+                          puedeEditarAct ? 'cursor-pointer hover:bg-indigo-200' : ''
+                        }`}
                       >
                         {act.nombre}
+                        {puedeEditarAct && <span className="ml-1 text-[20px]">✎</span>}
                       </th>
                     );
                   })}
+
+                  <th
+                    rowSpan={2}
+                    className="border border-gray-200 px-2 py-1 text-center font-semibold text-amber-700 bg-amber-50 whitespace-nowrap"
+                  >
+                    Autoevaluación
+                  </th>
+
+                  {materiasUnicas.length > 0 && (
+                    <th
+                      colSpan={materiasUnicas.length}
+                      className="border border-gray-200 px-2 py-1 text-center font-semibold text-violet-700 bg-violet-50 whitespace-nowrap"
+                    >
+                      Nota Final
+                    </th>
+                  )}
 
                   <th
                     rowSpan={2}
@@ -793,15 +1028,34 @@ export default function NotasAdminPage() {
                         {m.abreviaturaMateria}
                       </th>
                     )),
-                    ...act.fechasAsistencia.map((fecha) => (
-                      <th
-                        key={`${act.id}-${fecha}`}
-                        className="border border-gray-200 px-1 py-1 text-center font-medium text-emerald-700 bg-emerald-50 whitespace-nowrap"
-                      >
-                        {formatFechaCorta(fecha)}
-                      </th>
-                    )),
+                    ...act.fechasAsistencia.map((fecha) => {
+                      const puedeEditarFecha = !esProfesor || periodoActivo;
+                      return (
+                        <th
+                          key={`${act.id}-${fecha}`}
+                          onClick={() => puedeEditarFecha && setSesionFecha({ act, fecha })}
+                          title={puedeEditarFecha ? 'Clic para cambiar la fecha de esta sesión' : undefined}
+                          className={`border border-gray-200 px-1 py-1 text-center font-medium text-emerald-700 border-gray-200 whitespace-nowrap ${
+                            puedeEditarFecha ? 'cursor-pointer hover:border-gray-100' : ''
+                          }`}
+                        >
+                          {formatFechaCorta(fecha)}
+                          {puedeEditarFecha && (
+                            <span className="ml-1 text-[20px]">✎</span>
+                          )}
+                        </th>
+                      );
+                    }),
                   ])}
+                  {materiasUnicas.map((mu) => (
+                    <th
+                      key={`final-${mu.idMateria}`}
+                      title={mu.nombre}
+                      className="border border-gray-200 px-1 py-1 text-center font-semibold text-violet-700 bg-violet-50 whitespace-nowrap cursor-help"
+                    >
+                      {mu.abreviatura}
+                    </th>
+                  ))}
                 </tr>
               </thead>
 
@@ -832,19 +1086,22 @@ export default function NotasAdminPage() {
                       {planilla.actividades.flatMap((act) => [
                         ...act.materias.map((m) => {
                           const cal = est.calificaciones[m.id];
+                          const puedeEditar = !esProfesor || periodoActivo;
                           return (
                             <td
                               key={m.id}
-                              className="border border-gray-200 px-1 py-1 text-center relative group"
+                              onClick={() => puedeEditar && setCeldaCal({ est, act, m })}
+                              title={puedeEditar ? (cal ? 'Clic para editar calificación' : 'Clic para registrar calificación') : undefined}
+                              className={`border border-gray-200 px-1 py-1 text-center relative group ${
+                                puedeEditar ? 'cursor-pointer hover:bg-indigo-50' : ''
+                              }`}
                             >
                               {cal ? (
                                 <>
                                   <span
-                                    className={
-                                      cal.observacion
-                                        ? 'underline decoration-dotted cursor-help'
-                                        : ''
-                                    }
+                                    className={`${cal.nota >= 6 ? 'text-gray-800' : 'text-red-600'} font-medium${
+                                      cal.observacion ? ' underline decoration-dotted cursor-help' : ''
+                                    }`}
                                   >
                                     {cal.nota.toFixed(1)}
                                   </span>
@@ -862,29 +1119,84 @@ export default function NotasAdminPage() {
                         }),
                         ...act.fechasAsistencia.map((fecha) => {
                           const as = est.asistencias[act.id]?.[fecha];
+                          const puedeEditarAs = !esProfesor || periodoActivo;
+                          const bgColor = as?.estado ? (ESTADO_BG[as.estado] ?? 'bg-gray-100') : '';
                           return (
                             <td
                               key={`${act.id}-${fecha}`}
-                              className={`border border-gray-200 px-1 py-1 text-center relative group ${
-                                as ? (ESTADO_BG[as.estado] ?? 'bg-gray-100') : ''
-                              }`}
+                              onClick={() => puedeEditarAs && setCeldaAsistencia({ est, act, fecha })}
+                              title={puedeEditarAs ? (as?.estado ? 'Clic para editar asistencia' : 'Clic para registrar asistencia') : undefined}
+                              className={`border border-gray-200 px-1 py-1 text-center relative group ${bgColor} ${puedeEditarAs ? 'cursor-pointer' : ''}`}
                             >
                               {as ? (
-                                <>
-                                  <span className="font-bold text-gray-700">
-                                    {ESTADO_LABEL[as.estado] ?? as.estado}
-                                  </span>
-                                  {as.observacion && (
-                                    <div className="absolute z-20 hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-800 text-white rounded whitespace-normal max-w-[180px] text-left shadow-lg pointer-events-none leading-tight">
-                                      {as.observacion}
-                                    </div>
-                                  )}
-                                </>
+                                as.estado ? (
+                                  <>
+                                    <span className="font-bold text-gray-700">
+                                      {ESTADO_LABEL[as.estado] ?? as.estado}
+                                    </span>
+                                    {as.observacion && (
+                                      <div className="absolute z-20 hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-800 text-white rounded whitespace-normal max-w-[180px] text-left shadow-lg pointer-events-none leading-tight">
+                                        {as.observacion}
+                                      </div>
+                                    )}
+                                  </>
+                                ) : (
+                                  <span className="text-gray-300">—</span>
+                                )
                               ) : null}
                             </td>
                           );
                         }),
                       ])}
+
+                      {/* Autoevaluación */}
+                      <td
+                        onClick={() => (!esProfesor || periodoActivo) && setEstudianteAutoeval(est)}
+                        title={(!esProfesor || periodoActivo) ? 'Clic para registrar autoevaluación' : undefined}
+                        className={`border border-gray-200 px-1 py-1 text-center bg-amber-50 font-semibold ${
+                          (!esProfesor || periodoActivo) ? 'cursor-pointer hover:bg-amber-100' : ''
+                        } ${
+                          est.autoevaluacion === null
+                            ? 'text-gray-300'
+                            : est.autoevaluacion >= 6
+                            ? 'text-amber-700'
+                            : 'text-red-600'
+                        }`}
+                      >
+                        {est.autoevaluacion !== null ? est.autoevaluacion.toFixed(1) : '—'}
+                      </td>
+
+                      {/* Nota final por materia (incluye autoevaluación) */}
+                      {materiasUnicas.map((mu) => {
+                        const notas: number[] = [];
+                        for (const act of planilla.actividades) {
+                          for (const m of act.materias) {
+                            if (m.idMateria === mu.idMateria) {
+                              const cal = est.calificaciones[m.id];
+                              if (cal) notas.push(cal.nota);
+                            }
+                          }
+                        }
+                        if (est.autoevaluacion !== null) notas.push(est.autoevaluacion);
+                        const promedio =
+                          notas.length > 0
+                            ? notas.reduce((s, n) => s + n, 0) / notas.length
+                            : null;
+                        return (
+                          <td
+                            key={`final-${mu.idMateria}`}
+                            className={`border border-gray-200 px-1 py-1 text-center font-semibold bg-violet-50 ${
+                              promedio === null
+                                ? 'text-gray-300'
+                                : promedio >= 6
+                                ? 'text-violet-700'
+                                : 'text-red-600'
+                            }`}
+                          >
+                            {promedio !== null ? promedio.toFixed(1) : '—'}
+                          </td>
+                        );
+                      })}
 
                       {/* Resumen asistencia */}
                       <td className="border border-gray-200 px-2 py-1 text-center font-medium text-gray-700">
@@ -931,6 +1243,20 @@ export default function NotasAdminPage() {
       )}
 
       {/* Modales */}
+      {actividadEditar && (
+        <ModalEditarActividad
+          actividad={actividadEditar}
+          isPending={updateActividad.isPending}
+          onClose={() => setActividadEditar(null)}
+          onSubmit={async (nombre) => {
+            try {
+              await updateActividad.mutateAsync({ id: actividadEditar.id, nombre });
+              setActividadEditar(null);
+            } catch { /* error manejado por onError del hook */ }
+          }}
+        />
+      )}
+
       {showModalActividad && (
         <ModalNuevaActividad
           selectedPeriodo={selectedPeriodo}
@@ -958,16 +1284,23 @@ export default function NotasAdminPage() {
       )}
 
 
-      {showModalCalificacion && (
-        <ModalNuevaCalificacion
-          actividades={actividades}
-          estudiantes={planilla?.estudiantes ?? []}
-          cargasProfesor={cargasProfesor}
-          isPending={createCalificacion.isPending}
-          onClose={() => setShowModalCalificacion(false)}
-          onSubmit={async (data) => {
-            await createCalificacion.mutateAsync(data);
-            setShowModalCalificacion(false);
+      {celdaCal && (
+        <ModalCalificacionCelda
+          target={celdaCal}
+          isCreating={createCalificacion.isPending}
+          isUpdating={updateCalificacion.isPending}
+          onClose={() => setCeldaCal(null)}
+          onCreate={async (data) => {
+            try {
+              await createCalificacion.mutateAsync(data);
+              setCeldaCal(null);
+            } catch { /* error manejado por onError del hook */ }
+          }}
+          onUpdate={async (id, data) => {
+            try {
+              await updateCalificacion.mutateAsync({ id, data });
+              setCeldaCal(null);
+            } catch { /* error manejado por onError del hook */ }
           }}
         />
       )}
@@ -978,9 +1311,59 @@ export default function NotasAdminPage() {
           estudiantes={planilla?.estudiantes ?? []}
           isPending={upsertAsistencia.isPending}
           onClose={() => setShowModalAsistencia(false)}
-          onSubmit={async (data) => {
-            await upsertAsistencia.mutateAsync(data);
+          onSubmitBulk={async (items) => {
+            await Promise.all(items.map(item => upsertAsistencia.mutateAsync(item)));
             setShowModalAsistencia(false);
+          }}
+        />
+      )}
+
+      {celdaAsistencia && (
+        <ModalAsistenciaCelda
+          target={celdaAsistencia}
+          isPending={upsertAsistencia.isPending}
+          onClose={() => setCeldaAsistencia(null)}
+          onSubmit={async (data) => {
+            try {
+              await upsertAsistencia.mutateAsync(data);
+              setCeldaAsistencia(null);
+            } catch { /* error manejado por onError del hook */ }
+          }}
+        />
+      )}
+
+      {sesionFecha && (
+        <ModalEditarFechaSesion
+          target={sesionFecha}
+          isPending={updateFechaAsistencia.isPending}
+          onClose={() => setSesionFecha(null)}
+          onSubmit={async (fechaNueva) => {
+            try {
+              await updateFechaAsistencia.mutateAsync({
+                idActividad: sesionFecha.act.id,
+                fechaActual: sesionFecha.fecha,
+                fechaNueva,
+              });
+              setSesionFecha(null);
+            } catch { /* error manejado por onError del hook */ }
+          }}
+        />
+      )}
+
+      {estudianteAutoeval && (
+        <ModalAutoevaluacion
+          estudiante={estudianteAutoeval}
+          isPending={upsertAutoevaluacion.isPending}
+          onClose={() => setEstudianteAutoeval(null)}
+          onSubmit={async ({ nota, observacion }) => {
+            await upsertAutoevaluacion.mutateAsync({
+              idEstudiante: estudianteAutoeval.id,
+              idPeriodo: selectedPeriodo,
+              idGradoEducacion: selectedGrado,
+              nota,
+              observacion,
+            });
+            setEstudianteAutoeval(null);
           }}
         />
       )}
