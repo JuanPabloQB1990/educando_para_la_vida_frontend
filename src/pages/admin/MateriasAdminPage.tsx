@@ -7,6 +7,7 @@ import type { Materia } from '../../types/materia';
 
 const schema = z.object({
   nombreMateria: z.string().min(1, 'Requerido').max(255, 'Máximo 255 caracteres'),
+  abreviatura: z.string().min(1, 'Requerido').max(255, 'Máximo 255 caracteres'),
 });
 type FormValues = z.infer<typeof schema>;
 
@@ -16,9 +17,9 @@ const inputCls = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm foc
 function SkeletonRow() {
   return (
     <tr>
-      {[1, 2].map((i) => (
+      {[1, 2, 3].map((i) => (
         <td key={i} className="px-4 py-3">
-          <div className="h-4 bg-gray-200 rounded animate-pulse" style={{ width: i === 1 ? '60%' : '20%' }} />
+          <div className="h-4 bg-gray-200 rounded animate-pulse" style={{ width: i === 1 ? '60%' : i === 2 ? '20%' : '15%' }} />
         </td>
       ))}
     </tr>
@@ -50,6 +51,11 @@ function ModalCrear({ onClose, onSubmit, isPending }: ModalCrearProps) {
             <input {...register('nombreMateria')} className={inputCls} placeholder="Ej: Matemáticas" autoFocus />
             {errors.nombreMateria && <p className="mt-1 text-xs text-red-500">{errors.nombreMateria.message}</p>}
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Abreviatura</label>
+            <input {...register('abreviatura')} className={inputCls} placeholder="Ej: MAT" />
+            {errors.abreviatura && <p className="mt-1 text-xs text-red-500">{errors.abreviatura.message}</p>}
+          </div>
           <div className="flex justify-end gap-2 pt-1">
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">
               Cancelar
@@ -75,7 +81,7 @@ interface ModalEditarProps {
 function ModalEditar({ materia, onClose, onSubmit, isPending }: ModalEditarProps) {
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { nombreMateria: materia.nombre },
+    defaultValues: { nombreMateria: materia.nombre, abreviatura: materia.abreviatura },
   });
 
   return (
@@ -90,6 +96,11 @@ function ModalEditar({ materia, onClose, onSubmit, isPending }: ModalEditarProps
             <label className="block text-sm font-medium text-gray-700 mb-1">Nombre de la materia</label>
             <input {...register('nombreMateria')} className={inputCls} />
             {errors.nombreMateria && <p className="mt-1 text-xs text-red-500">{errors.nombreMateria.message}</p>}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Abreviatura</label>
+            <input {...register('abreviatura')} className={inputCls} />
+            {errors.abreviatura && <p className="mt-1 text-xs text-red-500">{errors.abreviatura.message}</p>}
           </div>
           <div className="flex justify-end gap-2 pt-1">
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">
@@ -149,13 +160,13 @@ export default function MateriasAdminPage() {
   const materiaEliminando = materias?.find((m) => m.id === eliminandoId);
 
   const handleCrear = async (form: FormValues) => {
-    await createMutation.mutateAsync(form.nombreMateria);
+    await createMutation.mutateAsync({ nombreMateria: form.nombreMateria, abreviatura: form.abreviatura });
     setShowCrear(false);
   };
 
   const handleEditar = async (form: FormValues) => {
     if (!editando) return;
-    await updateMutation.mutateAsync({ id: editando.id, nombreMateria: form.nombreMateria });
+    await updateMutation.mutateAsync({ id: editando.id, nombreMateria: form.nombreMateria, abreviatura: form.abreviatura });
     setEditando(null);
   };
 
@@ -188,6 +199,7 @@ export default function MateriasAdminPage() {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-4 py-3 text-left font-semibold text-gray-700">Nombre</th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-700">Abreviatura</th>
                 <th className="px-4 py-3 text-left font-semibold text-gray-700">Acciones</th>
               </tr>
             </thead>
@@ -196,7 +208,7 @@ export default function MateriasAdminPage() {
                 Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)
               ) : !materias?.length ? (
                 <tr>
-                  <td colSpan={2} className="px-6 py-10 text-center text-gray-400">
+                  <td colSpan={3} className="px-6 py-10 text-center text-gray-400">
                     No hay materias registradas.
                   </td>
                 </tr>
@@ -204,6 +216,7 @@ export default function MateriasAdminPage() {
                 materias.map((m) => (
                   <tr key={m.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 text-gray-900">{m.nombre}</td>
+                    <td className="px-4 py-3 text-gray-600 font-mono text-xs">{m.abreviatura}</td>
                     <td className="px-4 py-3">
                       <div className="flex gap-3">
                         <button

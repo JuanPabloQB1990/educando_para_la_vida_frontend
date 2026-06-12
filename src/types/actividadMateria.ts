@@ -3,6 +3,5 @@ export interface ActividadMateria {
   idActividad: string;
   idMateria: string;
   idCargaAcademica: string;
-  nombre: string;
   nombreMateria?: string;
 }

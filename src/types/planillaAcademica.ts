@@ -1,14 +1,14 @@
 export interface PlanillaActividadMateria {
   id: string;
-  nombre: string;
   nombreMateria: string;
+  abreviaturaMateria: string;
 }
 
 export interface PlanillaActividad {
   id: string;
   nombre: string;
-  semana: number;
   materias: PlanillaActividadMateria[];
+  fechasAsistencia: string[];
 }
 
 export interface PlanillaCalificacion {
@@ -29,7 +29,7 @@ export interface PlanillaEstudiante {
   tipoDocumento: string;
   noDocumento: string;
   calificaciones: Record<string, PlanillaCalificacion>;
-  asistencias: Record<string, PlanillaAsistencia>;
+  asistencias: Record<string, Record<string, PlanillaAsistencia>>;
   totalPresente: number;
   porcentajeAsistencia: number;
 }
@@ -40,6 +40,5 @@ export interface PlanillaAcademica {
   periodo: { id: string; numeroPeriodo: number };
   director: string | null;
   actividades: PlanillaActividad[];
-  fechasAsistencia: string[];
   estudiantes: PlanillaEstudiante[];
 }

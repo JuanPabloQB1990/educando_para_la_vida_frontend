@@ -140,7 +140,7 @@ function ModalConfirmar({ item, onClose, onConfirm, isPending }: ModalConfirmarP
       <div className="bg-white rounded-xl shadow-lg w-full max-w-sm p-6">
         <h2 className="text-base font-semibold text-gray-800 mb-2">Confirmar eliminación</h2>
         <p className="text-sm text-gray-600 mb-6">
-          ¿Eliminar la carga de <span className="font-medium">{item.nombre}</span> ({item.nombreGrado ?? '—'}) asignada a{' '}
+          ¿Eliminar la carga de <span className="font-medium">{item.nombreMateria}</span> ({item.nombreGrado ?? '—'}) asignada a{' '}
           <span className="font-medium">{item.nombreUsuario}</span>? Esta acción no se puede deshacer.
         </p>
         <div className="flex justify-end gap-2">
@@ -262,7 +262,7 @@ export default function CargasAdminPage() {
                   <tr key={c.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 text-gray-900 font-medium">{c.nombreUsuario ?? '—'}</td>
                     <td className="px-4 py-3 text-gray-700">{c.nombreGrado ?? '—'}</td>
-                    <td className="px-4 py-3 text-gray-700">{c.nombre ?? '—'}</td>
+                    <td className="px-4 py-3 text-gray-700">{c.nombreMateria ?? '—'}</td>
                     <td className="px-4 py-3 text-gray-500">{c.nombreBloque ?? '—'}</td>
                     <td className="px-4 py-3 text-gray-500">{c.anio ?? '—'}</td>
                     <td className="px-4 py-3">

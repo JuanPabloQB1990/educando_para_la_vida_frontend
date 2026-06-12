@@ -19,7 +19,8 @@ export function useMaterias() {
 export function useCreateMateria() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (nombreMateria: string) => materiaService.create(nombreMateria),
+    mutationFn: ({ nombreMateria, abreviatura }: { nombreMateria: string; abreviatura: string }) =>
+      materiaService.create(nombreMateria, abreviatura),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [QK] });
       toast.success('Materia creada exitosamente.');
@@ -33,8 +34,8 @@ export function useCreateMateria() {
 export function useUpdateMateria() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, nombreMateria }: { id: string; nombreMateria: string }) =>
-      materiaService.update(id, nombreMateria),
+    mutationFn: ({ id, nombreMateria, abreviatura }: { id: string; nombreMateria: string; abreviatura: string }) =>
+      materiaService.update(id, nombreMateria, abreviatura),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [QK] });
       toast.success('Materia actualizada exitosamente.');

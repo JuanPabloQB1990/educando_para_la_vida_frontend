@@ -58,8 +58,6 @@ export function useCreateActividad() {
       idPeriodo: string;
       idGradoEducacion: string;
       nombreActividad: string;
-      semana: number;
-      descripcion?: string;
     }) => actividadService.create(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['actividades'] });
@@ -79,7 +77,6 @@ export function useCreateActividadMateria() {
       idActividad: string;
       idMateria: string;
       idCargaAcademica: string;
-      nombreActividad: string;
     }) => actividadMateriaService.create(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['actividadMaterias'] });

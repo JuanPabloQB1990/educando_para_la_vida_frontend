@@ -13,8 +13,6 @@ const actividadService = {
     idPeriodo: string;
     idGradoEducacion: string;
     nombreActividad: string;
-    semana: number;
-    descripcion?: string;
   }): Promise<Actividad> {
     const res = await http.post('/docente/actividad', data);
     return res.data.data;

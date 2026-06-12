@@ -52,8 +52,6 @@ interface ModalNuevaActividadProps {
     idPeriodo: string;
     idGradoEducacion: string;
     nombreActividad: string;
-    semana: number;
-    descripcion?: string;
   }) => Promise<void>;
 }
 
@@ -65,18 +63,14 @@ function ModalNuevaActividad({
   onSubmit,
 }: ModalNuevaActividadProps) {
   const [nombre, setNombre] = useState('');
-  const [semana, setSemana] = useState('1');
-  const [descripcion, setDescripcion] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nombre.trim() || !semana) return;
+    if (!nombre.trim()) return;
     await onSubmit({
       idPeriodo: selectedPeriodo,
       idGradoEducacion: selectedGrado,
       nombreActividad: nombre.trim(),
-      semana: Number(semana),
-      descripcion: descripcion.trim() || undefined,
     });
   };
 
@@ -92,26 +86,6 @@ function ModalNuevaActividad({
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Semana *</label>
-            <input
-              type="number"
-              min={1}
-              value={semana}
-              onChange={(e) => setSemana(e.target.value)}
-              required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-            <textarea
-              value={descripcion}
-              onChange={(e) => setDescripcion(e.target.value)}
-              rows={2}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
@@ -148,7 +122,6 @@ interface ModalNuevaActividadMateriaProps {
     idActividad: string;
     idMateria: string;
     idCargaAcademica: string;
-    nombreActividad: string;
   }) => Promise<void>;
 }
 
@@ -161,18 +134,16 @@ function ModalNuevaActividadMateria({
 }: ModalNuevaActividadMateriaProps) {
   const [idActividad, setIdActividad] = useState('');
   const [idCarga, setIdCarga] = useState('');
-  const [nombre, setNombre] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!idActividad || !idCarga || !nombre.trim()) return;
+    if (!idActividad || !idCarga) return;
     const carga = cargasProfesor.find((c) => c.id === idCarga);
     if (!carga) return;
     await onSubmit({
       idActividad,
       idMateria: carga.idMateria,
       idCargaAcademica: carga.id,
-      nombreActividad: nombre.trim(),
     });
   };
 
@@ -192,7 +163,7 @@ function ModalNuevaActividadMateria({
               <option value="">Seleccionar actividad</option>
               {actividades.map((a) => (
                 <option key={a.id} value={a.id}>
-                  Sem. {a.semana} — {a.nombre}
+                  {a.nombre}
                 </option>
               ))}
             </select>
@@ -214,16 +185,6 @@ function ModalNuevaActividadMateria({
                 </option>
               ))}
             </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
-            <input
-              type="text"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <button
@@ -335,7 +296,7 @@ function ModalNuevaCalificacion({
               <option value="">Seleccionar actividad</option>
               {actividades.map((a) => (
                 <option key={a.id} value={a.id}>
-                  Sem. {a.semana} — {a.nombre}
+                  {a.nombre}
                 </option>
               ))}
             </select>
@@ -356,7 +317,7 @@ function ModalNuevaCalificacion({
               </option>
               {actividadMateriasFiltradas.map((am) => (
                 <option key={am.id} value={am.id}>
-                  {am.nombre} — {am.nombreMateria}
+                  {am.nombreMateria}
                 </option>
               ))}
             </select>
@@ -486,7 +447,7 @@ function ModalNuevaAsistencia({
               <option value="">Seleccionar actividad</option>
               {actividades.map((a) => (
                 <option key={a.id} value={a.id}>
-                  Sem. {a.semana} — {a.nombre}
+                  {a.nombre}
                 </option>
               ))}
             </select>
@@ -623,9 +584,13 @@ export default function NotasAdminPage() {
 
   const totalColumnas =
     3 +
-    (planilla?.actividades.reduce((s, a) => s + a.materias.length, 0) ?? 0) +
-    (planilla?.fechasAsistencia.length ?? 0) +
+    (planilla?.actividades.reduce(
+      (s, a) => s + a.materias.length + a.fechasAsistencia.length,
+      0
+    ) ?? 0) +
     2;
+
+  const hayAsistencias = planilla?.actividades.some((a) => a.fechasAsistencia.length > 0) ?? false;
 
   return (
     <div className="space-y-4">
@@ -788,26 +753,19 @@ export default function NotasAdminPage() {
                     Doc. Identidad
                   </th>
 
-                  {planilla.actividades.map((act) =>
-                    act.materias.length > 0 ? (
+                  {planilla.actividades.map((act) => {
+                    const span = act.materias.length + act.fechasAsistencia.length;
+                    if (span === 0) return null;
+                    return (
                       <th
                         key={act.id}
-                        colSpan={act.materias.length}
+                        colSpan={span}
                         className="border border-gray-200 px-2 py-1 text-center font-semibold text-indigo-700 bg-indigo-100 whitespace-nowrap"
                       >
                         {act.nombre}
                       </th>
-                    ) : null
-                  )}
-
-                  {planilla.fechasAsistencia.length > 0 && (
-                    <th
-                      colSpan={planilla.fechasAsistencia.length}
-                      className="border border-gray-200 px-2 py-1 text-center font-semibold text-emerald-700 bg-emerald-50 whitespace-nowrap"
-                    >
-                      Asistencia
-                    </th>
-                  )}
+                    );
+                  })}
 
                   <th
                     rowSpan={2}
@@ -825,25 +783,25 @@ export default function NotasAdminPage() {
 
                 {/* Fila 2: sub-columnas */}
                 <tr className="bg-gray-50">
-                  {planilla.actividades.flatMap((act) =>
-                    act.materias.map((m) => (
+                  {planilla.actividades.flatMap((act) => [
+                    ...act.materias.map((m) => (
                       <th
                         key={m.id}
                         title={m.nombreMateria}
                         className="border border-gray-200 px-1 py-1 text-center font-medium text-gray-600 whitespace-nowrap cursor-help"
                       >
-                        {m.nombre}
+                        {m.abreviaturaMateria}
                       </th>
-                    ))
-                  )}
-                  {planilla.fechasAsistencia.map((fecha) => (
-                    <th
-                      key={fecha}
-                      className="border border-gray-200 px-1 py-1 text-center font-medium text-gray-600 whitespace-nowrap"
-                    >
-                      {formatFechaCorta(fecha)}
-                    </th>
-                  ))}
+                    )),
+                    ...act.fechasAsistencia.map((fecha) => (
+                      <th
+                        key={`${act.id}-${fecha}`}
+                        className="border border-gray-200 px-1 py-1 text-center font-medium text-emerald-700 bg-emerald-50 whitespace-nowrap"
+                      >
+                        {formatFechaCorta(fecha)}
+                      </th>
+                    )),
+                  ])}
                 </tr>
               </thead>
 
@@ -870,9 +828,9 @@ export default function NotasAdminPage() {
                         {est.tipoDocumento} {est.noDocumento}
                       </td>
 
-                      {/* Notas */}
-                      {planilla.actividades.flatMap((act) =>
-                        act.materias.map((m) => {
+                      {/* Notas y asistencias agrupadas por actividad */}
+                      {planilla.actividades.flatMap((act) => [
+                        ...act.materias.map((m) => {
                           const cal = est.calificaciones[m.id];
                           return (
                             <td
@@ -901,34 +859,32 @@ export default function NotasAdminPage() {
                               )}
                             </td>
                           );
-                        })
-                      )}
-
-                      {/* Asistencias */}
-                      {planilla.fechasAsistencia.map((fecha) => {
-                        const as = est.asistencias[fecha];
-                        return (
-                          <td
-                            key={fecha}
-                            className={`border border-gray-200 px-1 py-1 text-center relative group ${
-                              as ? (ESTADO_BG[as.estado] ?? 'bg-gray-100') : ''
-                            }`}
-                          >
-                            {as ? (
-                              <>
-                                <span className="font-bold text-gray-700">
-                                  {ESTADO_LABEL[as.estado] ?? as.estado}
-                                </span>
-                                {as.observacion && (
-                                  <div className="absolute z-20 hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-800 text-white rounded whitespace-normal max-w-[180px] text-left shadow-lg pointer-events-none leading-tight">
-                                    {as.observacion}
-                                  </div>
-                                )}
-                              </>
-                            ) : null}
-                          </td>
-                        );
-                      })}
+                        }),
+                        ...act.fechasAsistencia.map((fecha) => {
+                          const as = est.asistencias[act.id]?.[fecha];
+                          return (
+                            <td
+                              key={`${act.id}-${fecha}`}
+                              className={`border border-gray-200 px-1 py-1 text-center relative group ${
+                                as ? (ESTADO_BG[as.estado] ?? 'bg-gray-100') : ''
+                              }`}
+                            >
+                              {as ? (
+                                <>
+                                  <span className="font-bold text-gray-700">
+                                    {ESTADO_LABEL[as.estado] ?? as.estado}
+                                  </span>
+                                  {as.observacion && (
+                                    <div className="absolute z-20 hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-800 text-white rounded whitespace-normal max-w-[180px] text-left shadow-lg pointer-events-none leading-tight">
+                                      {as.observacion}
+                                    </div>
+                                  )}
+                                </>
+                              ) : null}
+                            </td>
+                          );
+                        }),
+                      ])}
 
                       {/* Resumen asistencia */}
                       <td className="border border-gray-200 px-2 py-1 text-center font-medium text-gray-700">
@@ -953,7 +909,7 @@ export default function NotasAdminPage() {
           </div>
 
           {/* Leyenda */}
-          {planilla.fechasAsistencia.length > 0 && (
+          {hayAsistencias && (
             <div className="px-6 py-3 border-t border-gray-100 flex flex-wrap gap-4 text-xs text-gray-500">
               <span className="font-semibold text-gray-600">Referencia:</span>
               <span className="flex items-center gap-1">
@@ -1000,6 +956,7 @@ export default function NotasAdminPage() {
           }}
         />
       )}
+
 
       {showModalCalificacion && (
         <ModalNuevaCalificacion

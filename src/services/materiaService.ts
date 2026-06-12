@@ -7,13 +7,13 @@ const materiaService = {
     return res.data.data;
   },
 
-  async create(nombreMateria: string): Promise<Materia> {
-    const res = await http.post('/catalogo/materia', { nombreMateria });
+  async create(nombreMateria: string, abreviatura: string): Promise<Materia> {
+    const res = await http.post('/catalogo/materia', { nombreMateria, abreviatura });
     return res.data.data;
   },
 
-  async update(id: string, nombreMateria: string): Promise<Materia> {
-    const res = await http.put(`/catalogo/materia/${id}`, { nombreMateria });
+  async update(id: string, nombreMateria: string, abreviatura: string): Promise<Materia> {
+    const res = await http.put(`/catalogo/materia/${id}`, { nombreMateria, abreviatura });
     return res.data.data;
   },
 
