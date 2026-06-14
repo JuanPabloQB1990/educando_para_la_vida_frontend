@@ -31,6 +31,7 @@ import DireccionGradoAdminPage from '../pages/admin/DireccionGradoAdminPage';
 import TiempoValidacionAdminPage from '../pages/admin/TiempoValidacionAdminPage';
 import RubrosAdminPage from '../pages/admin/RubrosAdminPage';
 import NotasAdminPage from '../pages/admin/NotasAdminPage';
+import ClassroomProfesorPage from '../pages/profesor/ClassroomProfesorPage';
 
 const routes: RouteObject[] = [
   // Públicas
@@ -109,9 +110,8 @@ const routes: RouteObject[] = [
             children: [
               { index: true, element: <DashboardProfesorPage /> },
               { path: 'cargas', element: <ComingSoon title="Carga Académica" /> },
-              { path: 'calificaciones', element: <NotasAdminPage /> },
-              { path: 'asistencia', element: <ComingSoon title="Asistencia" /> },
-              { path: 'classroom', element: <ComingSoon title="Classroom" /> },
+              { path: 'notas', element: <NotasAdminPage /> },
+              { path: 'classroom', element: <ClassroomProfesorPage /> },
               { path: 'clase-virtual', element: <ComingSoon title="Link Clase Virtual" /> },
             ],
           },

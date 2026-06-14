@@ -969,7 +969,7 @@ export default function NotasAdminPage() {
                   {planilla.actividades.map((act) => {
                     const span = act.materias.length + act.fechasAsistencia.length;
                     if (span === 0) return null;
-                    const puedeEditarAct = !esProfesor || periodoActivo;
+                    const puedeEditarAct = periodoActivo;
                     return (
                       <th
                         key={act.id}
@@ -1029,7 +1029,7 @@ export default function NotasAdminPage() {
                       </th>
                     )),
                     ...act.fechasAsistencia.map((fecha) => {
-                      const puedeEditarFecha = !esProfesor || periodoActivo;
+                      const puedeEditarFecha = periodoActivo;
                       return (
                         <th
                           key={`${act.id}-${fecha}`}
@@ -1086,7 +1086,7 @@ export default function NotasAdminPage() {
                       {planilla.actividades.flatMap((act) => [
                         ...act.materias.map((m) => {
                           const cal = est.calificaciones[m.id];
-                          const puedeEditar = !esProfesor || periodoActivo;
+                          const puedeEditar = periodoActivo;
                           return (
                             <td
                               key={m.id}
@@ -1119,7 +1119,7 @@ export default function NotasAdminPage() {
                         }),
                         ...act.fechasAsistencia.map((fecha) => {
                           const as = est.asistencias[act.id]?.[fecha];
-                          const puedeEditarAs = !esProfesor || periodoActivo;
+                          const puedeEditarAs = periodoActivo;
                           const bgColor = as?.estado ? (ESTADO_BG[as.estado] ?? 'bg-gray-100') : '';
                           return (
                             <td
@@ -1151,10 +1151,10 @@ export default function NotasAdminPage() {
 
                       {/* Autoevaluación */}
                       <td
-                        onClick={() => (!esProfesor || periodoActivo) && setEstudianteAutoeval(est)}
-                        title={(!esProfesor || periodoActivo) ? 'Clic para registrar autoevaluación' : undefined}
+                        onClick={() => periodoActivo && setEstudianteAutoeval(est)}
+                        title={periodoActivo ? 'Clic para registrar autoevaluación' : undefined}
                         className={`border border-gray-200 px-1 py-1 text-center bg-amber-50 font-semibold ${
-                          (!esProfesor || periodoActivo) ? 'cursor-pointer hover:bg-amber-100' : ''
+                          periodoActivo ? 'cursor-pointer hover:bg-amber-100' : ''
                         } ${
                           est.autoevaluacion === null
                             ? 'text-gray-300'

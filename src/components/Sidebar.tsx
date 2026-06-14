@@ -30,8 +30,7 @@ const adminNav: NavItem[] = [
 const profesorNav: NavItem[] = [
   { label: 'Dashboard', to: '/profesor', icon: <IconGrid /> },
   { label: 'Carga Académica', to: '/profesor/cargas', icon: <IconBook /> },
-  { label: 'Planilla Académica', to: '/profesor/calificaciones', icon: <IconChart /> },
-  { label: 'Asistencia', to: '/profesor/asistencia', icon: <IconClipboard /> },
+  { label: 'Notas y Asistencias', to: '/profesor/notas', icon: <IconClipboard /> },
   { label: 'Classroom', to: '/profesor/classroom', icon: <IconFolder /> },
   { label: 'Link Clase Virtual', to: '/profesor/clase-virtual', icon: <IconLink /> },
 ];
