@@ -21,6 +21,8 @@ import PagosAdminPage from '../pages/admin/PagosAdminPage';
 import UsuariosAdminPage from '../pages/admin/UsuariosAdminPage';
 import DashboardProfesorPage from '../pages/profesor/DashboardProfesorPage';
 import DashboardEstudiantePage from '../pages/estudiante/DashboardEstudiantePage';
+import PerfilEstudiantePage from '../pages/estudiante/PerfilEstudiantePage';
+import PagosEstudiantePage from '../pages/estudiante/PagosEstudiantePage';
 import DashboardSecretariaPage from '../pages/secretaria/DashboardSecretariaPage';
 import MateriasAdminPage from '../pages/admin/MateriasAdminPage';
 import GradosEducacionAdminPage from '../pages/admin/GradosEducacionAdminPage';
@@ -32,6 +34,7 @@ import TiempoValidacionAdminPage from '../pages/admin/TiempoValidacionAdminPage'
 import RubrosAdminPage from '../pages/admin/RubrosAdminPage';
 import NotasAdminPage from '../pages/admin/NotasAdminPage';
 import ClassroomProfesorPage from '../pages/profesor/ClassroomProfesorPage';
+import ClaseVirtualProfesorPage from '../pages/profesor/ClaseVirtualProfesorPage';
 
 const routes: RouteObject[] = [
   // Públicas
@@ -112,7 +115,7 @@ const routes: RouteObject[] = [
               { path: 'cargas', element: <ComingSoon title="Carga Académica" /> },
               { path: 'notas', element: <NotasAdminPage /> },
               { path: 'classroom', element: <ClassroomProfesorPage /> },
-              { path: 'clase-virtual', element: <ComingSoon title="Link Clase Virtual" /> },
+              { path: 'clase-virtual', element: <ClaseVirtualProfesorPage /> },
             ],
           },
         ],
@@ -126,9 +129,10 @@ const routes: RouteObject[] = [
             element: <DashboardLayout />,
             children: [
               { index: true, element: <DashboardEstudiantePage /> },
+              { path: 'perfil', element: <PerfilEstudiantePage /> },
               { path: 'notas', element: <ComingSoon title="Mis Notas" /> },
               { path: 'asistencia', element: <ComingSoon title="Asistencia" /> },
-              { path: 'pagos', element: <ComingSoon title="Pagos" /> },
+              { path: 'pagos', element: <PagosEstudiantePage /> },
               { path: 'classroom', element: <ComingSoon title="Classroom" /> },
             ],
           },

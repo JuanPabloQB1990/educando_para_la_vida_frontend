@@ -37,6 +37,7 @@ const profesorNav: NavItem[] = [
 
 const estudianteNav: NavItem[] = [
   { label: 'Dashboard', to: '/estudiante', icon: <IconGrid /> },
+  { label: 'Mi Perfil', to: '/estudiante/perfil', icon: <IconUserCircle /> },
   { label: 'Mis Notas', to: '/estudiante/notas', icon: <IconChart /> },
   { label: 'Asistencia', to: '/estudiante/asistencia', icon: <IconClipboard /> },
   { label: 'Pagos', to: '/estudiante/pagos', icon: <IconCash /> },
@@ -250,6 +251,15 @@ function IconUserCheck() {
     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="w-full h-full">
       <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="8.5" cy="7" r="4" />
       <polyline points="17 11 19 13 23 9" />
+    </svg>
+  );
+}
+function IconUserCircle() {
+  return (
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="w-full h-full">
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="10" r="3" />
+      <path d="M7 20.662V19a2 2 0 012-2h6a2 2 0 012 2v1.662" />
     </svg>
   );
 }

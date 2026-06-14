@@ -16,6 +16,29 @@ export function useDireccionesGrado() {
   return useQuery({ queryKey: [QK], queryFn: direccionGradoService.getAll });
 }
 
+export function useDireccionesGradoByProfesor(idUsuario?: string, idAnioElectivo?: string) {
+  return useQuery({
+    queryKey: [QK, 'profesor', idUsuario, idAnioElectivo ?? ''],
+    queryFn: () => direccionGradoService.getByProfesor(idUsuario!, idAnioElectivo),
+    enabled: !!idUsuario,
+  });
+}
+
+export function useUpdateLinkClaseVirtual(idUsuario?: string, idAnioElectivo?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, link }: { id: string; link: string }) =>
+      direccionGradoService.updateLink(id, link),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [QK, 'profesor', idUsuario, idAnioElectivo ?? ''] });
+      toast.success('Link de clase virtual actualizado.');
+    },
+    onError: (error: unknown) => {
+      toast.error(extractErrorMessage(error, 'Error al actualizar el link.'));
+    },
+  });
+}
+
 export function useCreateDireccionGrado() {
   const qc = useQueryClient();
   return useMutation({

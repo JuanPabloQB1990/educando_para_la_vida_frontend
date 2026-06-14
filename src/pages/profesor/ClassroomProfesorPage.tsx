@@ -12,8 +12,14 @@ import {
   useUploadAdjuntos,
   useDeleteAdjunto,
 } from '../../hooks/useClassroomTarea';
+import {
+  useEntregasByCarga,
+  useAdjuntosByEntrega,
+  useUpdateEstadoEntrega,
+} from '../../hooks/useClassroomEntrega';
 import type { Periodo } from '../../types/periodo';
 import type { ClassroomTarea, ClassroomTareaAdjunto } from '../../types/classroomTarea';
+import type { ClassroomEntrega, ClassroomEntregaAdjunto, ClassroomEntregaEstado, UpdateEstadoEntregaDto } from '../../types/classroomEntrega';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -444,11 +450,301 @@ function TareaCard({ tarea, onEdit, onDelete, onAdjuntos }: TareaCardProps) {
   );
 }
 
+// ─── Helpers entregas ────────────────────────────────────────────────────────
+
+function estadoBadge(estado: ClassroomEntregaEstado) {
+  const map: Record<ClassroomEntregaEstado, string> = {
+    pendiente: 'bg-yellow-100 text-yellow-700',
+    aprovado: 'bg-green-100 text-green-700',
+    corregido: 'bg-blue-100 text-blue-700',
+  };
+  const labels: Record<ClassroomEntregaEstado, string> = {
+    pendiente: 'Pendiente',
+    aprovado: 'Aprobado',
+    corregido: 'Corregido',
+  };
+  return (
+    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${map[estado]}`}>
+      {labels[estado]}
+    </span>
+  );
+}
+
+// ─── Modal: Adjuntos de entrega ───────────────────────────────────────────────
+
+interface ModalAdjuntosEntregaProps {
+  entrega: ClassroomEntrega;
+  adjuntos: ClassroomEntregaAdjunto[];
+  isLoading: boolean;
+  onClose: () => void;
+}
+
+function ModalAdjuntosEntrega({ entrega, adjuntos, isLoading, onClose }: ModalAdjuntosEntregaProps) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-lg p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-base font-semibold text-gray-800">Documentos entregados</h2>
+            <p className="text-xs text-gray-400 mt-0.5">{entrega.nombreEstudiante}</p>
+          </div>
+          <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className="space-y-2 max-h-64 overflow-y-auto">
+          {isLoading ? (
+            <p className="text-sm text-gray-400 animate-pulse py-2">Cargando documentos...</p>
+          ) : adjuntos.length === 0 ? (
+            <p className="text-sm text-gray-400 py-2">El estudiante no ha subido documentos.</p>
+          ) : (
+            adjuntos.map((adj) => (
+              <div key={adj.id} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
+                <span className="text-lg shrink-0">{getExtIcon(adj.nombreArchivo)}</span>
+                <a
+                  href={adj.urlArchivo}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-violet-600 hover:underline truncate"
+                  title={adj.nombreArchivo}
+                >
+                  {adj.nombreArchivo}
+                </a>
+              </div>
+            ))
+          )}
+        </div>
+        <div className="flex justify-end mt-4">
+          <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Modal: Actualizar estado de entrega ──────────────────────────────────────
+
+interface ModalEstadoEntregaProps {
+  entrega: ClassroomEntrega;
+  isPending: boolean;
+  onClose: () => void;
+  onSubmit: (data: UpdateEstadoEntregaDto) => Promise<void>;
+}
+
+function ModalEstadoEntrega({ entrega, isPending, onClose, onSubmit }: ModalEstadoEntregaProps) {
+  const [estado, setEstado] = useState<ClassroomEntregaEstado>(entrega.estado);
+  const [observacion, setObservacion] = useState(entrega.observacionProfesor ?? '');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await onSubmit({ estadoEntrega: estado, observacionProfesor: observacion.trim() || undefined });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-sm p-6">
+        <h2 className="text-base font-semibold text-gray-800 mb-1">Actualizar estado</h2>
+        <p className="text-xs text-gray-400 mb-4">{entrega.nombreEstudiante}</p>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Estado *</label>
+            <select
+              value={estado}
+              onChange={(e) => setEstado(e.target.value as ClassroomEntregaEstado)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+            >
+              <option value="pendiente">Pendiente</option>
+              <option value="aprovado">Aprobado</option>
+              <option value="corregido">Corregido</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Observación (opcional)</label>
+            <textarea
+              value={observacion}
+              onChange={(e) => setObservacion(e.target.value)}
+              rows={3}
+              placeholder="Escribe una observación para el estudiante..."
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-1">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">
+              Cancelar
+            </button>
+            <button type="submit" disabled={isPending} className="px-4 py-2 text-sm text-white bg-violet-600 rounded-lg hover:bg-violet-700 disabled:opacity-50">
+              {isPending ? 'Guardando...' : 'Guardar'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ─── Fila de entrega ──────────────────────────────────────────────────────────
+
+interface EntregaRowProps {
+  entrega: ClassroomEntrega;
+  onVerAdjuntos: () => void;
+  onCambiarEstado: () => void;
+}
+
+function EntregaRow({ entrega, onVerAdjuntos, onCambiarEstado }: EntregaRowProps) {
+  const fecha = new Date(entrega.fechaEntrega).toLocaleDateString('es', {
+    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  });
+  return (
+    <div className="flex items-center justify-between gap-3 px-3 py-2.5 bg-gray-50 rounded-lg">
+      <div className="flex items-center gap-3 min-w-0">
+        <span className="text-sm text-gray-800 font-medium truncate">{entrega.nombreEstudiante}</span>
+        <span className="text-xs text-gray-400 shrink-0">{fecha}</span>
+        {estadoBadge(entrega.estado)}
+      </div>
+      <div className="flex items-center gap-1.5 shrink-0">
+        <button
+          type="button"
+          onClick={onVerAdjuntos}
+          className="text-xs text-violet-600 bg-violet-50 hover:bg-violet-100 px-2.5 py-1 rounded-lg font-medium"
+        >
+          Ver archivos
+        </button>
+        <button
+          type="button"
+          onClick={onCambiarEstado}
+          className="text-xs text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg font-medium"
+        >
+          Estado
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Tab Entregas ─────────────────────────────────────────────────────────────
+
+interface TabEntregasProps {
+  selectedCarga: string;
+  selectedPeriodo: string;
+}
+
+function TabEntregas({ selectedCarga, selectedPeriodo }: TabEntregasProps) {
+  const [adjuntosEntrega, setAdjuntosEntrega] = useState<ClassroomEntrega | null>(null);
+  const [estadoEntrega, setEstadoEntrega] = useState<ClassroomEntrega | null>(null);
+
+  const { data: entregas = [], isLoading, isError } = useEntregasByCarga(
+    selectedCarga || undefined,
+    selectedPeriodo || undefined,
+  );
+
+  const { data: adjuntos = [], isLoading: isLoadingAdj } = useAdjuntosByEntrega(adjuntosEntrega?.id);
+  const updateEstado = useUpdateEstadoEntrega(selectedCarga, selectedPeriodo || undefined);
+
+  const entregasPorTarea = useMemo(() => {
+    const map = new Map<string, { titulo: string; entregas: ClassroomEntrega[] }>();
+    for (const e of entregas) {
+      const key = e.idClassroomTarea;
+      if (!map.has(key)) map.set(key, { titulo: e.tituloTarea ?? 'Sin título', entregas: [] });
+      map.get(key)!.entregas.push(e);
+    }
+    return Array.from(map.values());
+  }, [entregas]);
+
+  if (!selectedCarga) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm p-8 text-center text-sm text-gray-400">
+        Selecciona una carga académica para ver las entregas.
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {[1, 2].map((i) => (
+          <div key={i} className="bg-white rounded-xl border border-gray-200 p-4 animate-pulse">
+            <div className="h-4 bg-gray-200 rounded w-1/3 mb-3" />
+            <div className="h-10 bg-gray-100 rounded mb-2" />
+            <div className="h-10 bg-gray-100 rounded" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm p-8 text-center text-sm text-red-500">
+        Error al cargar las entregas. Intenta de nuevo.
+      </div>
+    );
+  }
+
+  if (entregasPorTarea.length === 0) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm p-8 text-center text-sm text-gray-400">
+        No hay entregas registradas{selectedPeriodo ? ' para el período seleccionado' : ''}.
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="space-y-4">
+        {entregasPorTarea.map(({ titulo, entregas: lista }) => (
+          <div key={titulo} className="bg-white rounded-xl border border-gray-200 shadow-sm">
+            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-gray-800">{titulo}</h3>
+              <span className="text-xs text-gray-400">{lista.length} entrega{lista.length !== 1 ? 's' : ''}</span>
+            </div>
+            <div className="p-3 space-y-2">
+              {lista.map((e) => (
+                <EntregaRow
+                  key={e.id}
+                  entrega={e}
+                  onVerAdjuntos={() => setAdjuntosEntrega(e)}
+                  onCambiarEstado={() => setEstadoEntrega(e)}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {adjuntosEntrega && (
+        <ModalAdjuntosEntrega
+          entrega={adjuntosEntrega}
+          adjuntos={adjuntos}
+          isLoading={isLoadingAdj}
+          onClose={() => setAdjuntosEntrega(null)}
+        />
+      )}
+
+      {estadoEntrega && (
+        <ModalEstadoEntrega
+          entrega={estadoEntrega}
+          isPending={updateEstado.isPending}
+          onClose={() => setEstadoEntrega(null)}
+          onSubmit={async (data) => {
+            await updateEstado.mutateAsync({ id: estadoEntrega.id, data });
+            setEstadoEntrega(null);
+          }}
+        />
+      )}
+    </>
+  );
+}
+
 // ─── Página principal ─────────────────────────────────────────────────────────
 
 export default function ClassroomProfesorPage() {
   const { user } = useAuth();
 
+  const [tab, setTab] = useState<'tareas' | 'entregas'>('tareas');
   const [selectedCarga, setSelectedCarga] = useState('');
   const [selectedPeriodo, setSelectedPeriodo] = useState('');
   const [showModalNuevaTarea, setShowModalNuevaTarea] = useState(false);
@@ -486,7 +782,25 @@ export default function ClassroomProfesorPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold text-gray-800">Classroom</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold text-gray-800">Classroom</h1>
+        <div className="flex rounded-lg border border-gray-200 overflow-hidden text-sm">
+          <button
+            type="button"
+            onClick={() => setTab('tareas')}
+            className={`px-4 py-1.5 font-medium transition-colors ${tab === 'tareas' ? 'bg-violet-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+          >
+            Tareas
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab('entregas')}
+            className={`px-4 py-1.5 font-medium transition-colors ${tab === 'entregas' ? 'bg-violet-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+          >
+            Entregas
+          </button>
+        </div>
+      </div>
 
       {/* Filtros */}
       <div className="bg-white rounded-xl shadow-sm p-4 flex flex-wrap gap-3 items-end">
@@ -520,7 +834,7 @@ export default function ClassroomProfesorPage() {
           </select>
         </div>
 
-        {selectedCarga && (
+        {selectedCarga && tab === 'tareas' && (
           <button
             onClick={() => setShowModalNuevaTarea(true)}
             className="ml-auto px-4 py-2 text-sm text-white bg-violet-600 rounded-lg hover:bg-violet-700"
@@ -530,55 +844,60 @@ export default function ClassroomProfesorPage() {
         )}
       </div>
 
-      {/* Estado vacío */}
-      {!selectedCarga && (
-        <div className="bg-white rounded-xl shadow-sm p-8 text-center text-sm text-gray-400">
-          Selecciona una carga académica para ver las tareas.
-        </div>
-      )}
-
-      {/* Loading skeleton */}
-      {selectedCarga && isLoading && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 p-4 animate-pulse">
-              <div className="h-4 bg-gray-200 rounded w-3/4 mb-3" />
-              <div className="h-3 bg-gray-200 rounded w-1/2 mb-2" />
-              <div className="h-3 bg-gray-200 rounded w-full mb-1" />
-              <div className="h-3 bg-gray-200 rounded w-5/6 mb-4" />
-              <div className="h-8 bg-gray-100 rounded" />
+      {/* Tab: Tareas */}
+      {tab === 'tareas' && (
+        <>
+          {!selectedCarga && (
+            <div className="bg-white rounded-xl shadow-sm p-8 text-center text-sm text-gray-400">
+              Selecciona una carga académica para ver las tareas.
             </div>
-          ))}
-        </div>
+          )}
+
+          {selectedCarga && isLoading && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white rounded-xl border border-gray-200 p-4 animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-3" />
+                  <div className="h-3 bg-gray-200 rounded w-1/2 mb-2" />
+                  <div className="h-3 bg-gray-200 rounded w-full mb-1" />
+                  <div className="h-3 bg-gray-200 rounded w-5/6 mb-4" />
+                  <div className="h-8 bg-gray-100 rounded" />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {selectedCarga && isError && (
+            <div className="bg-white rounded-xl shadow-sm p-8 text-center text-sm text-red-500">
+              Error al cargar las tareas. Intenta de nuevo.
+            </div>
+          )}
+
+          {selectedCarga && !isLoading && !isError && tareasFiltradas.length === 0 && (
+            <div className="bg-white rounded-xl shadow-sm p-8 text-center text-sm text-gray-400">
+              No hay tareas registradas{selectedPeriodo ? ' para el período seleccionado' : ''}.
+            </div>
+          )}
+
+          {selectedCarga && !isLoading && !isError && tareasFiltradas.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {tareasFiltradas.map((tarea) => (
+                <TareaCard
+                  key={tarea.id}
+                  tarea={tarea}
+                  onEdit={() => setEditTarea(tarea)}
+                  onDelete={() => setDeleteTareaTarget(tarea)}
+                  onAdjuntos={() => setAdjuntosTarea(tarea)}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
 
-      {/* Error */}
-      {selectedCarga && isError && (
-        <div className="bg-white rounded-xl shadow-sm p-8 text-center text-sm text-red-500">
-          Error al cargar las tareas. Intenta de nuevo.
-        </div>
-      )}
-
-      {/* Sin tareas */}
-      {selectedCarga && !isLoading && !isError && tareasFiltradas.length === 0 && (
-        <div className="bg-white rounded-xl shadow-sm p-8 text-center text-sm text-gray-400">
-          No hay tareas registradas{selectedPeriodo ? ' para el período seleccionado' : ''}.
-        </div>
-      )}
-
-      {/* Grid de tareas */}
-      {selectedCarga && !isLoading && !isError && tareasFiltradas.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {tareasFiltradas.map((tarea) => (
-            <TareaCard
-              key={tarea.id}
-              tarea={tarea}
-              onEdit={() => setEditTarea(tarea)}
-              onDelete={() => setDeleteTareaTarget(tarea)}
-              onAdjuntos={() => setAdjuntosTarea(tarea)}
-            />
-          ))}
-        </div>
+      {/* Tab: Entregas */}
+      {tab === 'entregas' && (
+        <TabEntregas selectedCarga={selectedCarga} selectedPeriodo={selectedPeriodo} />
       )}
 
       {/* Modal: Nueva tarea */}

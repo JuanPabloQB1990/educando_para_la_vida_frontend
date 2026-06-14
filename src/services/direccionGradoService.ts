@@ -13,6 +13,16 @@ const direccionGradoService = {
     const res = await http.get('/docente/direccion_grado');
     return res.data.data;
   },
+  async getByProfesor(idUsuario: string, idAnioElectivo?: string): Promise<DireccionGrado[]> {
+    const params: Record<string, string> = { idUsuario };
+    if (idAnioElectivo) params.idAnioElectivo = idAnioElectivo;
+    const res = await http.get('/docente/direccion_grado', { params });
+    return res.data.data;
+  },
+  async updateLink(id: string, linkClaseVirtual: string): Promise<DireccionGrado> {
+    const res = await http.patch(`/docente/direccion_grado/${id}/link`, { linkClaseVirtual });
+    return res.data.data;
+  },
   async create(data: CreateDireccionGradoDto): Promise<DireccionGrado> {
     const res = await http.post('/docente/direccion_grado', data);
     return res.data.data;
