@@ -44,3 +44,55 @@ export function useUpdateEstadoEntrega(idCargaAcademica: string, idPeriodo?: str
     },
   });
 }
+
+const QK_EST = 'classroomEntregasEstudiante';
+
+export function useEntregasEstudiante() {
+  return useQuery({
+    queryKey: [QK_EST],
+    queryFn: () => classroomEntregaService.listForEstudiante(),
+  });
+}
+
+export function useCreateEntregaEstudiante() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (idClassroomTarea: string) => classroomEntregaService.createForEstudiante(idClassroomTarea),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [QK_EST] });
+    },
+    onError: (error: unknown) => {
+      toast.error(extractErrorMessage(error, 'Error al registrar la entrega.'));
+    },
+  });
+}
+
+export function useUploadAdjuntosEntrega() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ idEntrega, files }: { idEntrega: string; files: File[] }) =>
+      classroomEntregaService.uploadAdjuntos(idEntrega, files),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: [QK_ADJ, vars.idEntrega] });
+      toast.success('Archivos subidos correctamente.');
+    },
+    onError: (error: unknown) => {
+      toast.error(extractErrorMessage(error, 'Error al subir los archivos.'));
+    },
+  });
+}
+
+export function useDeleteAdjuntoEntregaEstudiante() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ idEntrega, adjuntoId }: { idEntrega: string; adjuntoId: string }) =>
+      classroomEntregaService.deleteAdjuntoEstudiante(idEntrega, adjuntoId),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: [QK_ADJ, vars.idEntrega] });
+      toast.success('Archivo eliminado.');
+    },
+    onError: (error: unknown) => {
+      toast.error(extractErrorMessage(error, 'Error al eliminar el archivo.'));
+    },
+  });
+}

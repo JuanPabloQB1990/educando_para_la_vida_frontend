@@ -7,6 +7,11 @@ const classroomTareaService = {
     return res.data.data;
   },
 
+  async listForEstudiante(): Promise<ClassroomTarea[]> {
+    const res = await http.get('/estudiante/classroom/tareas');
+    return res.data.data;
+  },
+
   async create(data: CreateClassroomTareaDto): Promise<ClassroomTarea> {
     const res = await http.post('/docente/classroom_tarea', data);
     return res.data.data;

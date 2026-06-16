@@ -29,7 +29,6 @@ const adminNav: NavItem[] = [
 
 const profesorNav: NavItem[] = [
   { label: 'Dashboard', to: '/profesor', icon: <IconGrid /> },
-  { label: 'Carga Académica', to: '/profesor/cargas', icon: <IconBook /> },
   { label: 'Notas y Asistencias', to: '/profesor/notas', icon: <IconClipboard /> },
   { label: 'Classroom', to: '/profesor/classroom', icon: <IconFolder /> },
   { label: 'Link Clase Virtual', to: '/profesor/clase-virtual', icon: <IconLink /> },
@@ -38,10 +37,9 @@ const profesorNav: NavItem[] = [
 const estudianteNav: NavItem[] = [
   { label: 'Dashboard', to: '/estudiante', icon: <IconGrid /> },
   { label: 'Mi Perfil', to: '/estudiante/perfil', icon: <IconUserCircle /> },
-  { label: 'Mis Notas', to: '/estudiante/notas', icon: <IconChart /> },
-  { label: 'Asistencia', to: '/estudiante/asistencia', icon: <IconClipboard /> },
   { label: 'Pagos', to: '/estudiante/pagos', icon: <IconCash /> },
   { label: 'Classroom', to: '/estudiante/classroom', icon: <IconFolder /> },
+  { label: 'Clase Virtual', to: '/estudiante/clase-virtual', icon: <IconLink /> },
 ];
 
 const secretariaNav: NavItem[] = [

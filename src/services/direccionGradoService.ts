@@ -34,6 +34,11 @@ const direccionGradoService = {
   async remove(id: string): Promise<void> {
     await http.delete(`/docente/direccion_grado/${id}`);
   },
+
+  async getForEstudiante(): Promise<DireccionGrado | null> {
+    const res = await http.get('/estudiante/clase-virtual');
+    return res.data.data;
+  },
 };
 
 export default direccionGradoService;

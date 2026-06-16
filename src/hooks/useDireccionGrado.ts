@@ -68,6 +68,13 @@ export function useUpdateDireccionGrado() {
   });
 }
 
+export function useDireccionGradoEstudiante() {
+  return useQuery({
+    queryKey: [QK, 'estudiante'],
+    queryFn: () => direccionGradoService.getForEstudiante(),
+  });
+}
+
 export function useDeleteDireccionGrado() {
   const qc = useQueryClient();
   return useMutation({

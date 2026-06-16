@@ -23,6 +23,13 @@ export function useTareasByCarga(idCargaAcademica?: string) {
   });
 }
 
+export function useTareasEstudiante() {
+  return useQuery({
+    queryKey: ['classroomTareasEstudiante'],
+    queryFn: () => classroomTareaService.listForEstudiante(),
+  });
+}
+
 export function useCreateTarea() {
   const qc = useQueryClient();
   return useMutation({

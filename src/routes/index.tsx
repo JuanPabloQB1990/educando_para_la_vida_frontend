@@ -35,6 +35,8 @@ import RubrosAdminPage from '../pages/admin/RubrosAdminPage';
 import NotasAdminPage from '../pages/admin/NotasAdminPage';
 import ClassroomProfesorPage from '../pages/profesor/ClassroomProfesorPage';
 import ClaseVirtualProfesorPage from '../pages/profesor/ClaseVirtualProfesorPage';
+import ClassroomEstudiantePage from '../pages/estudiante/ClassroomEstudiantePage';
+import ClaseVirtualEstudiantePage from '../pages/estudiante/ClaseVirtualEstudiantePage';
 
 const routes: RouteObject[] = [
   // Públicas
@@ -112,7 +114,6 @@ const routes: RouteObject[] = [
             element: <DashboardLayout />,
             children: [
               { index: true, element: <DashboardProfesorPage /> },
-              { path: 'cargas', element: <ComingSoon title="Carga Académica" /> },
               { path: 'notas', element: <NotasAdminPage /> },
               { path: 'classroom', element: <ClassroomProfesorPage /> },
               { path: 'clase-virtual', element: <ClaseVirtualProfesorPage /> },
@@ -130,10 +131,9 @@ const routes: RouteObject[] = [
             children: [
               { index: true, element: <DashboardEstudiantePage /> },
               { path: 'perfil', element: <PerfilEstudiantePage /> },
-              { path: 'notas', element: <ComingSoon title="Mis Notas" /> },
-              { path: 'asistencia', element: <ComingSoon title="Asistencia" /> },
               { path: 'pagos', element: <PagosEstudiantePage /> },
-              { path: 'classroom', element: <ComingSoon title="Classroom" /> },
+              { path: 'classroom', element: <ClassroomEstudiantePage /> },
+              { path: 'clase-virtual', element: <ClaseVirtualEstudiantePage /> },
             ],
           },
         ],
