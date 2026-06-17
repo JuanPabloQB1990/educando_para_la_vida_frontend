@@ -1,33 +1,7 @@
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { usePagosAdmin, useRubros, useVerificarPago, useMatricularAnio, useGradosByMatricula, useObligacionesByMatricula, useEliminarObligacion } from '../../hooks/usePagosAdmin';
-import { useAniosElectivos } from '../../hooks/useAnioElectivo';
-import type { PagoAdmin, PagoAdminFilters, MatricularAnioDto } from '../../types/pago';
-import type { AnioElectivo } from '../../types/anioElectivo';
-import type { Rubro } from '../../types/rubro';
-
-// ─── Schemas ────────────────────────────────────────────────────────────────
-const verificarSchema = z.object({
-  observaciones: z.string().optional(),
-});
-type VerificarForm = z.infer<typeof verificarSchema>;
-
-const MESES = [
-  { index: 0, nombre: 'Enero' },
-  { index: 1, nombre: 'Febrero' },
-  { index: 2, nombre: 'Marzo' },
-  { index: 3, nombre: 'Abril' },
-  { index: 4, nombre: 'Mayo' },
-  { index: 5, nombre: 'Junio' },
-  { index: 6, nombre: 'Julio' },
-  { index: 7, nombre: 'Agosto' },
-  { index: 8, nombre: 'Septiembre' },
-  { index: 9, nombre: 'Octubre' },
-  { index: 10, nombre: 'Noviembre' },
-  { index: 11, nombre: 'Diciembre' },
-];
+import { useNavigate, useLocation } from 'react-router-dom';
+import { usePagosAdmin, useRubros, useVerificarPago, useObligacionesByMatricula } from '../../hooks/usePagosAdmin';
+import type { PagoAdmin, PagoAdminFilters } from '../../types/pago';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function formatFecha(fecha: string | null) {
@@ -37,6 +11,12 @@ function formatFecha(fecha: string | null) {
     month: '2-digit',
     year: 'numeric',
   });
+}
+
+function driveViewUrl(url?: string | null): string | null {
+  if (!url) return null;
+  const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  return match ? `https://drive.usercontent.google.com/download?id=${match[1]}=view&authuser=0` : null;
 }
 
 function parseArrayField(value: string | null | undefined): string | null {
@@ -166,9 +146,9 @@ function ModalInfoEstudiante({ pago, onClose }: { pago: PagoAdmin; onClose: () =
           {/* Foto + datos básicos */}
           <section className="flex gap-5">
             <div className="shrink-0">
-              {pago.fileFoto ? (
+              {driveViewUrl(pago.fileFoto) ? (
                 <img
-                  src={pago.fileFoto}
+                  src={driveViewUrl(pago.fileFoto)!}
                   alt="Foto estudiante"
                   className="w-24 h-32 object-cover rounded border border-gray-200 shadow-sm"
                 />
@@ -479,274 +459,19 @@ function ModalVerificar({ pago, onClose, onConfirm, isPending }: ModalVerificarP
   );
 }
 
-// ─── Modal matricular año ─────────────────────────────────────────────────────
-interface ModalMatricularAnioProps {
-  pago: PagoAdmin;
-  anios: AnioElectivo[];
-  rubros: Rubro[];
-  onClose: () => void;
-  onConfirm: (dto: MatricularAnioDto) => Promise<void>;
-  onEliminarObligacion: (id: string) => Promise<void>;
-  isPending: boolean;
-  isDeletingObligacion: boolean;
-}
-
-function ModalMatricularAnio({ pago, anios, rubros, onClose, onConfirm, onEliminarObligacion, isPending, isDeletingObligacion }: ModalMatricularAnioProps) {
-  const [idAnioElectivo, setIdAnioElectivo] = useState('');
-  const [idRubro, setIdRubro] = useState('');
-  const [meses, setMeses] = useState<number[]>([]);
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-
-  const { data: grados, isLoading: loadingGrados } = useGradosByMatricula(pago.idEstudianteMatricula);
-  const { data: obligaciones, isLoading: loadingObligaciones } = useObligacionesByMatricula(pago.idEstudianteMatricula);
-  
-  const toggleMes = (index: number) => {
-    setMeses((prev) =>
-      prev.includes(index) ? prev.filter((m) => m !== index) : [...prev, index]
-    );
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const errs: Record<string, string> = {};
-    if (!idAnioElectivo) errs.idAnioElectivo = 'Seleccione un año electivo';
-    if (!idRubro) errs.idRubro = 'Seleccione un rubro';
-    if (meses.length === 0) errs.meses = 'Seleccione al menos un mes';
-    if (Object.keys(errs).length > 0) {
-      setFormErrors(errs);
-      return;
-    }
-    await onConfirm({ idAnioElectivo, idRubro, meses: [...meses].sort((a, b) => a - b) });
-    setMeses([]);
-  };
-
-  const estadoGradoBadge: Record<string, string> = {
-    pendiente: 'bg-yellow-100 text-yellow-700',
-    finalizado: 'bg-green-100 text-green-700',
-    retirado: 'bg-red-100 text-red-700',
-  };
-
-  const estadoObligacionBadge: Record<string, string> = {
-    pendiente: 'bg-yellow-100 text-yellow-700',
-    pagado: 'bg-green-100 text-green-700',
-    vencido: 'bg-red-100 text-red-700',
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white rounded-xl shadow-lg w-full max-w-md max-h-[92vh] flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
-          <h2 className="text-base font-semibold text-gray-800">Matricular al año electivo</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
-        </div>
-
-        <div className="overflow-y-auto px-6 py-5 space-y-5">
-          {/* Info del estudiante */}
-          <div>
-            <p className="text-sm font-medium text-gray-800">
-              {pago.nombres} {pago.apellido1} {pago.apellido2 ?? ''}
-            </p>
-            <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-600">
-              <div>
-                <span className="text-gray-400">Tipo de estudio: </span>
-                <span className="font-medium">{pago.nombreTipoEstudio ?? '—'}</span>
-              </div>
-              <div>
-                <span className="text-gray-400">Tiempo de validación: </span>
-                <span className="font-medium">
-                  {pago.tiempoValidacion != null ? `${pago.tiempoValidacion} meses` : '—'}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Grados matriculados */}
-          <div>
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Grados matriculados</p>
-            {loadingGrados ? (
-              <div className="space-y-1.5">
-                {[1, 2].map((i) => (
-                  <div key={i} className="h-6 bg-gray-100 rounded animate-pulse" />
-                ))}
-              </div>
-            ) : grados && grados.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {grados.map((g) => (
-                  <span
-                    key={g.idGradoEducacion}
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${estadoGradoBadge[g.estado] ?? 'bg-gray-100 text-gray-600'}`}
-                  >
-                    {g.nombreGrado}
-                    <span className="opacity-70 capitalize">· {g.estado}</span>
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-gray-400 italic">Sin grados matriculados.</p>
-            )}
-          </div>
-
-          {/* Obligaciones de pago */}
-          <div>
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Obligaciones de pago</p>
-            {loadingObligaciones ? (
-              <div className="space-y-1.5">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-6 bg-gray-100 rounded animate-pulse" />
-                ))}
-              </div>
-            ) : obligaciones && obligaciones.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs border-collapse">
-                  <thead>
-                    <tr className="bg-gray-50 text-gray-500">
-                      <th className="text-left px-2 py-1.5 font-medium">Rubro</th>
-                      <th className="text-left px-2 py-1.5 font-medium">Vencimiento</th>
-                      <th className="text-left px-2 py-1.5 font-medium">Estado</th>
-                      <th className="text-left px-2 py-1.5 font-medium">Acción</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {obligaciones.map((ob) => (
-                      <tr key={ob.idObligacionPago}>
-                        <td className="px-2 py-1.5 text-gray-700">{ob.nombreRubro}</td>
-                        <td className="px-2 py-1.5 text-gray-600">
-                          {ob.fechaVencimiento ? ob.fechaVencimiento.slice(0, 10) : '—'}
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <span className={`inline-block px-2 py-0.5 rounded-full font-medium capitalize ${estadoObligacionBadge[ob.estado] ?? 'bg-gray-100 text-gray-600'}`}>
-                            {ob.estado}
-                          </span>
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <button
-                            type="button"
-                            onClick={() => onEliminarObligacion(ob.idObligacionPago)}
-                            disabled={isDeletingObligacion}
-                            className="text-red-500 hover:text-red-700 text-xs font-medium disabled:opacity-50"
-                          >
-                            Eliminar
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-xs text-gray-400 italic">Sin obligaciones registradas.</p>
-            )}
-          </div>
-
-          {/* Formulario */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Año electivo</label>
-              <select
-                value={idAnioElectivo}
-                onChange={(e) => {
-                  setIdAnioElectivo(e.target.value);
-                  setFormErrors((p) => ({ ...p, idAnioElectivo: '' }));
-                }}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="">Seleccione un año</option>
-                {anios.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.anio} — {a.estado}
-                  </option>
-                ))}
-              </select>
-              {formErrors.idAnioElectivo && (
-                <p className="mt-1 text-xs text-red-500">{formErrors.idAnioElectivo}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Rubro</label>
-              <select
-                value={idRubro}
-                onChange={(e) => {
-                  setIdRubro(e.target.value);
-                  setFormErrors((p) => ({ ...p, idRubro: '' }));
-                }}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="">Seleccione un rubro</option>
-                {rubros.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.nombre}{r.montoBase ? ` — ${formatMonto(r.montoBase)}` : ''}
-                  </option>
-                ))}
-              </select>
-              {formErrors.idRubro && (
-                <p className="mt-1 text-xs text-red-500">{formErrors.idRubro}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Meses{' '}
-                <span className="text-xs text-gray-400 font-normal">(vencimiento el día 27 de cada mes)</span>
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {MESES.map((mes) => (
-                  <label key={mes.index} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={meses.includes(mes.index)}
-                      onChange={() => {
-                        toggleMes(mes.index);
-                        setFormErrors((p) => ({ ...p, meses: '' }));
-                      }}
-                      className="cursor-pointer"
-                    />
-                    <span className="text-sm text-gray-700">{mes.nombre}</span>
-                  </label>
-                ))}
-              </div>
-              {formErrors.meses && (
-                <p className="mt-1 text-xs text-red-500">{formErrors.meses}</p>
-              )}
-            </div>
-
-            <div className="flex justify-end gap-2 pt-1">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={isPending}
-                className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
-              >
-                {isPending ? 'Agregando...' : 'Agregar'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ─── Página principal ────────────────────────────────────────────────────────
 export default function PagosAdminPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [filters, setFilters] = useState<PagoAdminFilters>({});
   const [draft, setDraft] = useState<PagoAdminFilters>({});
   const [verificando, setVerificando] = useState<PagoAdmin | null>(null);
   const [infoEstudiante, setInfoEstudiante] = useState<PagoAdmin | null>(null);
-  const [matriculando, setMatriculando] = useState<PagoAdmin | null>(null);
 
   const { data: pagos, isLoading, isError } = usePagosAdmin(filters);
   const { data: rubros } = useRubros();
-  const { data: anios } = useAniosElectivos();
   const verificarMutation = useVerificarPago();
-  const matricularMutation = useMatricularAnio();
-  const eliminarObligacionMutation = useEliminarObligacion();
 
   const aplicarFiltros = () => setFilters({ ...draft });
 
@@ -914,7 +639,7 @@ export default function PagosAdminPage() {
                 Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
               ) : !pagos?.length ? (
                 <tr>
-                  <td colSpan={13} className="px-6 py-10 text-center text-gray-400">
+                  <td colSpan={11} className="px-6 py-10 text-center text-gray-400">
                     No hay comprobantes que coincidan con los filtros.
                   </td>
                 </tr>
@@ -953,10 +678,10 @@ export default function PagosAdminPage() {
                           Verificar
                         </button>
                         <button
-                          onClick={() => setMatriculando(p)}
+                          onClick={() => navigate(`${location.pathname}/matricular/${p.idEstudianteMatricula}`, { state: { pago: p } })}
                           className="text-indigo-600 hover:text-indigo-800 text-xs font-medium text-left"
                         >
-                          Agregar rubro
+                          Agregar item
                         </button>
                       </div>
                     </td>
@@ -984,28 +709,6 @@ export default function PagosAdminPage() {
         />
       )}
 
-      {matriculando && (
-        <ModalMatricularAnio
-          pago={matriculando}
-          anios={anios ?? []}
-          rubros={rubros ?? []}
-          onClose={() => setMatriculando(null)}
-          onConfirm={async (dto) => {
-            await matricularMutation.mutateAsync({
-              id: matriculando.idEstudianteMatricula,
-              dto,
-            });
-          }}
-          onEliminarObligacion={async (id) => {
-            await eliminarObligacionMutation.mutateAsync({
-              id,
-              idEstudianteMatricula: matriculando.idEstudianteMatricula,
-            });
-          }}
-          isPending={matricularMutation.isPending}
-          isDeletingObligacion={eliminarObligacionMutation.isPending}
-        />
-      )}
     </div>
   );
 }

@@ -17,7 +17,7 @@ import type { Bloque } from '../../types/bloque';
 
 const schema = z.object({
   idUsuario: z.string().min(1, 'Selecciona un profesor'),
-  idGradoEducacion: z.string().min(1, 'Selecciona un grado'),
+  idGradoEducacion: z.string().optional(),
   idAnioElectivo: z.string().min(1, 'Selecciona un año electivo'),
   idBloque: z.string().optional(),
 });
@@ -62,16 +62,17 @@ function FormFields({ register, errors, profesores, grados, anios, bloques }: Fo
         {errors.idUsuario && <p className="mt-1 text-xs text-red-500">{errors.idUsuario.message}</p>}
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Grado</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Grado <span className="text-gray-400 font-normal">(opcional)</span>
+        </label>
         <select {...register('idGradoEducacion')} className={selectCls}>
-          <option value="">Selecciona un grado</option>
+          <option value="">Sin grado asignado</option>
           {grados.map((g) => (
             <option key={g.id} value={g.id}>
               {g.nombre}
             </option>
           ))}
         </select>
-        {errors.idGradoEducacion && <p className="mt-1 text-xs text-red-500">{errors.idGradoEducacion.message}</p>}
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Año Electivo</label>
@@ -155,7 +156,7 @@ function ModalEditar({ item, onClose, onSubmit, isPending, profesores, grados, a
     resolver: zodResolver(schema),
     defaultValues: {
       idUsuario: item.idUsuario,
-      idGradoEducacion: item.idGradoEducacion,
+      idGradoEducacion: item.idGradoEducacion ?? undefined,
       idAnioElectivo: item.idAnioElectivo,
       idBloque: item.idBloque ?? '',
     },
@@ -393,7 +394,7 @@ export default function DireccionGradoAdminPage() {
       {eliminandoId && itemEliminando && (
         <ModalConfirmar
           nombreProfesor={itemEliminando.nombreUsuario ?? itemEliminando.idUsuario}
-          nombreGrado={itemEliminando.nombreGrado ?? itemEliminando.idGradoEducacion}
+          nombreGrado={itemEliminando.nombreGrado ?? itemEliminando.idGradoEducacion ?? 'Sin grado'}
           onClose={() => setEliminandoId(null)}
           onConfirm={handleEliminar}
           isPending={deleteMutation.isPending}

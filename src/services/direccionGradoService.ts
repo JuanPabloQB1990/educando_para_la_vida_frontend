@@ -2,7 +2,7 @@ import http from './http';
 import type { DireccionGrado } from '../types/direccionGrado';
 
 export interface CreateDireccionGradoDto {
-  idGradoEducacion: string;
+  idGradoEducacion?: string | null;
   idUsuario: string;
   idAnioElectivo: string;
   idBloque?: string | null;

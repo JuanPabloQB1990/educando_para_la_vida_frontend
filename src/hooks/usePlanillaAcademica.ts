@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
+import { extractApiError } from '../utils/extractApiError';
 import planillaAcademicaService from '../services/planillaAcademicaService';
 import cargaAcademicaService from '../services/cargaAcademicaService';
 import actividadService from '../services/actividadService';
@@ -106,10 +107,6 @@ export function useCreateActividadMateria() {
   });
 }
 
-function getApiErrorMessage(error: unknown, fallback: string): string {
-  return (error as any)?.response?.data?.error?.message || fallback;
-}
-
 export function useCreateCalificacion() {
   const qc = useQueryClient();
   return useMutation({
@@ -124,7 +121,7 @@ export function useCreateCalificacion() {
       toast.success('Calificación registrada.');
     },
     onError: (error: unknown) => {
-      toast.error(getApiErrorMessage(error, 'Error al registrar la calificación.'));
+      toast.error(extractApiError(error, 'Error al registrar la calificación.'));
     },
   });
 }
@@ -139,7 +136,7 @@ export function useUpdateCalificacion() {
       toast.success('Calificación actualizada.');
     },
     onError: (error: unknown) => {
-      toast.error(getApiErrorMessage(error, 'Error al actualizar la calificación.'));
+      toast.error(extractApiError(error, 'Error al actualizar la calificación.'));
     },
   });
 }

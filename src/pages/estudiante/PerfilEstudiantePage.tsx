@@ -8,7 +8,7 @@ import type { PerfilEstudiante } from '../../types/perfilEstudiante';
 function driveViewUrl(url?: string | null): string | null {
   if (!url) return null;
   const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-  return match ? `https://lh3.googleusercontent.com/d/${match[1]}` : null;
+  return match ? `https://drive.google.com/uc?export=view&id=${match[1]}` : null;
 }
 
 function parseJsonList(value?: string | null): string {

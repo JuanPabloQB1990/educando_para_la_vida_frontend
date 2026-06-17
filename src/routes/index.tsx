@@ -37,6 +37,10 @@ import ClassroomProfesorPage from '../pages/profesor/ClassroomProfesorPage';
 import ClaseVirtualProfesorPage from '../pages/profesor/ClaseVirtualProfesorPage';
 import ClassroomEstudiantePage from '../pages/estudiante/ClassroomEstudiantePage';
 import ClaseVirtualEstudiantePage from '../pages/estudiante/ClaseVirtualEstudiantePage';
+import MatriculasAdminPage from '../pages/admin/MatriculasAdminPage';
+import DetalleEstudiantePage from '../pages/admin/DetalleEstudiantePage';
+import HistorialMatriculaPage from '../pages/admin/HistorialMatriculaPage';
+import MatricularAnioPage from '../pages/admin/MatricularAnioPage';
 
 const routes: RouteObject[] = [
   // Públicas
@@ -69,11 +73,14 @@ const routes: RouteObject[] = [
               { path: 'tipo-estudio', element: <TipoEstudioAdminPage /> },
               { path: 'tiempo-validacion', element: <TiempoValidacionAdminPage /> },
               { path: 'direccion-grado', element: <DireccionGradoAdminPage /> },
-              { path: 'matriculas', element: <ComingSoon title="Matrículas" /> },
+              { path: 'matriculas', element: <MatriculasAdminPage /> },
+              { path: 'matriculas/:idEstudiante/detalle', element: <DetalleEstudiantePage /> },
+              { path: 'matriculas/:idEstudiante/historial', element: <HistorialMatriculaPage /> },
               { path: 'cargas', element: <CargasAdminPage /> },
               { path: 'notas', element: <NotasAdminPage /> },
               { path: 'rubros', element: <RubrosAdminPage /> },
               { path: 'pagos', element: <PagosAdminPage /> },
+              { path: 'pagos/matricular/:idEstudianteMatricula', element: <MatricularAnioPage /> },
             ],
           },
         ],
@@ -96,11 +103,14 @@ const routes: RouteObject[] = [
               { path: 'plan-estudio', element: <PlanEstudioAdminPage /> },
               { path: 'tiempo-validacion', element: <TiempoValidacionAdminPage /> },
               { path: 'direccion-grado', element: <DireccionGradoAdminPage /> },
-              { path: 'matriculas', element: <ComingSoon title="Matrículas" /> },
+              { path: 'matriculas', element: <MatriculasAdminPage /> },
+              { path: 'matriculas/:idEstudiante/detalle', element: <DetalleEstudiantePage /> },
+              { path: 'matriculas/:idEstudiante/historial', element: <HistorialMatriculaPage /> },
               { path: 'cargas', element: <CargasAdminPage /> },
               { path: 'notas', element: <NotasAdminPage /> },
               { path: 'rubros', element: <RubrosAdminPage /> },
               { path: 'pagos', element: <PagosAdminPage /> },
+              { path: 'pagos/matricular/:idEstudianteMatricula', element: <MatricularAnioPage /> },
             ],
           },
         ],
@@ -144,14 +154,5 @@ const routes: RouteObject[] = [
   // Fallback
   { path: '*', element: <Navigate to="/" replace /> },
 ];
-
-function ComingSoon({ title }: { title: string }) {
-  return (
-    <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-      <h2 className="text-lg font-semibold text-gray-800 mb-2">{title}</h2>
-      <p className="text-sm text-gray-400">Módulo en construcción.</p>
-    </div>
-  );
-}
 
 export default routes;

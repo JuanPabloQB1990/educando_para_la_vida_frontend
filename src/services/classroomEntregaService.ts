@@ -37,6 +37,11 @@ const classroomEntregaService = {
     return res.data.data;
   },
 
+  async getAdjuntosEstudiante(idEntrega: string): Promise<ClassroomEntregaAdjunto[]> {
+    const res = await http.get(`/estudiante/classroom/entregas/${idEntrega}/adjuntos`);
+    return res.data.data;
+  },
+
   async deleteAdjuntoEstudiante(idEntrega: string, adjuntoId: string): Promise<void> {
     await http.delete(`/estudiante/classroom/entregas/${idEntrega}/adjuntos/${adjuntoId}`);
   },

@@ -1,6 +1,6 @@
 export interface DireccionGrado {
   id: string;
-  idGradoEducacion: string;
+  idGradoEducacion: string | null;
   idUsuario: string;
   idAnioElectivo: string;
   idBloque?: string | null;

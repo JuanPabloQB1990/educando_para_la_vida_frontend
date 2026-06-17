@@ -42,7 +42,14 @@ function GradoCard({ grado, onSave, isSaving }: GradoCardProps) {
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
       <div className="flex items-start justify-between gap-3 mb-4">
         <div>
-          <h3 className="text-sm font-semibold text-gray-800">{grado.nombreGrado}</h3>
+          <h3 className="text-sm font-semibold text-gray-800">
+            {grado.nombreGrado ?? 'Sin grado'}
+            {grado.nombreBloque && (
+              <span className="ml-2 text-xs font-normal text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded-full">
+                {grado.nombreBloque}
+              </span>
+            )}
+          </h3>
           {ultimaActualizacion && (
             <p className="text-xs text-gray-400 mt-0.5">Actualizado: {ultimaActualizacion}</p>
           )}

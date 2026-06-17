@@ -66,12 +66,12 @@ export default App;
 
 ## 🔧 Configuración de API
 
-El componente envía datos a: `http://localhost:3001/api/inscripciones`
+El componente envía datos a: `http://localhost:3000/api/inscripciones`
 
 Para cambiar la URL base, edita el archivo `src/services/api.ts`:
 
 ```typescript
-const API_BASE_URL = 'http://localhost:3001/api'; // ← Cambiar aquí
+const API_BASE_URL = 'http://localhost:3000/api'; // ← Cambiar aquí
 ```
 
 ### Formato de respuesta esperada:

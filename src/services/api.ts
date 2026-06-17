@@ -33,9 +33,7 @@ export const getTipoDocumentos = async (): Promise<TipoDocumento[]> => {
 export const getTipoEstudios = async (): Promise<TipoEstudio[]> => {
   try {
     const response = await registrationApi.get<ApiResponse<TipoEstudio[]>>(config.api.endpoints.tipoEstudio);
-    const data = getResponseData<TipoEstudio[]>(response);
-    console.log('Tipos de Estudio obtenidos:', data);
-    return data;
+    return getResponseData<TipoEstudio[]>(response);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(error.response?.data?.error || error.message);
@@ -86,16 +84,12 @@ export const submitRegistration = async (formData: FormData): Promise<{ id: stri
     );
     
     if (!response.data.success) {
-      console.log(response.data.message);
       throw new Error(response.data.error || 'Error al procesar la inscripción');
     }
-    console.log(response.data.message);
-    
     return response.data.data;
   } catch (error) {
     
     if (axios.isAxiosError(error)) {
-      console.log(error.response?.data?.error);
       const responseError = error.response?.data?.error;
       const message = typeof responseError === 'string'
         ? responseError

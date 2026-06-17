@@ -48,6 +48,7 @@ interface ModalNuevaTareaProps {
   idCargaAcademica: string;
   idPeriodoPreseleccionado: string;
   periodos: Periodo[];
+  tieneBloque: boolean;
   isPending: boolean;
   onClose: () => void;
   onSubmit: (data: {
@@ -63,6 +64,7 @@ function ModalNuevaTarea({
   idCargaAcademica,
   idPeriodoPreseleccionado,
   periodos,
+  tieneBloque,
   isPending,
   onClose,
   onSubmit,
@@ -74,16 +76,17 @@ function ModalNuevaTarea({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!titulo.trim() || !instrucciones.trim() || !fechaLimite || !idPeriodo) return;
+    if (!titulo.trim() || !instrucciones.trim() || !fechaLimite) return;
+    if (!tieneBloque && !idPeriodo) return;
     await onSubmit({ idCargaAcademica, idPeriodo, titulo: titulo.trim(), instrucciones: instrucciones.trim(), fechaLimite });
   };
-
+  
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="bg-white rounded-xl shadow-lg w-full max-w-lg p-6">
         <h2 className="text-base font-semibold text-gray-800 mb-4">Nueva Tarea</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {!idPeriodoPreseleccionado && (
+          {!tieneBloque && !idPeriodoPreseleccionado && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Período *</label>
               <select
@@ -762,6 +765,8 @@ export default function ClassroomProfesorPage() {
 
   const { data: periodos = [] } = usePeriodosByAnio(idAnioActual || undefined);
   const { data: cargas = [] } = useCargasProfesor(user?.id, idAnioActual || undefined);
+  const cargaSeleccionada = useMemo(() => cargas.find((c) => c.id === selectedCarga) ?? null, [cargas, selectedCarga]);
+  const tieneBloque = !!cargaSeleccionada?.idBloque;
   const { data: tareas = [], isLoading, isError } = useTareasByCarga(selectedCarga || undefined);
 
   const createTarea = useCreateTarea();
@@ -779,7 +784,7 @@ export default function ClassroomProfesorPage() {
     if (!selectedPeriodo) return tareas;
     return tareas.filter((t) => t.idPeriodo === selectedPeriodo);
   }, [tareas, selectedPeriodo]);
-
+  
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -808,24 +813,27 @@ export default function ClassroomProfesorPage() {
           <label className="text-xs font-medium text-gray-600">Carga académica</label>
           <select
             value={selectedCarga}
-            onChange={(e) => setSelectedCarga(e.target.value)}
+            onChange={(e) => { setSelectedCarga(e.target.value); setSelectedPeriodo(''); }}
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 min-w-[220px]"
           >
             <option value="">Seleccionar carga</option>
             {cargas.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.nombreMateria} — {c.nombreGrado}
+                {c.nombreMateria} — {c.nombreGrado}{c.nombreBloque ? ` (${c.nombreBloque})` : ''}
               </option>
             ))}
           </select>
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-gray-600">Período (opcional)</label>
+          <label className={`text-xs font-medium ${tieneBloque ? 'text-gray-400' : 'text-gray-600'}`}>
+            Período (opcional){tieneBloque && ' — no aplica para este bloque'}
+          </label>
           <select
             value={selectedPeriodo}
             onChange={(e) => setSelectedPeriodo(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+            disabled={tieneBloque}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
           >
             <option value="">Todos los períodos</option>
             {periodos.map((p) => (
@@ -906,6 +914,7 @@ export default function ClassroomProfesorPage() {
           idCargaAcademica={selectedCarga}
           idPeriodoPreseleccionado={selectedPeriodo}
           periodos={periodos}
+          tieneBloque={tieneBloque}
           isPending={createTarea.isPending}
           onClose={() => setShowModalNuevaTarea(false)}
           onSubmit={async (data) => {

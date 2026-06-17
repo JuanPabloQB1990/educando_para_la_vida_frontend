@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import { usuarioService } from '../services/usuarioService';
+import { extractApiError } from '../utils/extractApiError';
 import type { CreateUsuarioDto, UpdateUsuarioDto } from '../types/usuario';
 
 const QK = 'usuarios';
@@ -34,9 +35,10 @@ export function useCreateUsuario() {
     mutationFn: (data: CreateUsuarioDto) => usuarioService.create(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [QK] });
+      toast.success('Usuario creado exitosamente.');
     },
     onError: (error: unknown) => {
-      toast.error(extractErrorMessage(error, 'Error al crear el usuario'));
+      toast.error(extractApiError(error, 'Error al crear el usuario'));
     },
   });
 }
@@ -51,7 +53,7 @@ export function useUpdateUsuario() {
       toast.success('Usuario actualizado exitosamente.');
     },
     onError: (error: unknown) => {
-      toast.error(extractErrorMessage(error, 'Error al actualizar el usuario'));
+      toast.error(extractApiError(error, 'Error al actualizar el usuario'));
     },
   });
 }
@@ -65,15 +67,7 @@ export function useDeleteUsuario() {
       toast.success('Usuario eliminado exitosamente.');
     },
     onError: (error: unknown) => {
-      toast.error(extractErrorMessage(error, 'Error al eliminar el usuario'));
+      toast.error(extractApiError(error, 'Error al eliminar el usuario'));
     },
   });
-}
-
-function extractErrorMessage(error: unknown, fallback: string): string {
-  if (error && typeof error === 'object' && 'response' in error) {
-    const e = error as { response?: { data?: { error?: { message?: string } } } };
-    return e.response?.data?.error?.message ?? fallback;
-  }
-  return fallback;
 }
