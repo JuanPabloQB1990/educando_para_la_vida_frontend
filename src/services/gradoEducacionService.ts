@@ -1,21 +1,22 @@
-import http from './http';
+import { ENDPOINTS } from '../config';
 import type { GradoEducacion } from '../types/gradoEducacion';
+import { apiGet, apiPost, apiPut, apiVoidDelete } from '../utils/apiHelpers';
 
 const gradoEducacionService = {
   async getAll(): Promise<GradoEducacion[]> {
-    const res = await http.get('/academico/grado_educacion');
-    return res.data.data;
+    return apiGet<GradoEducacion[]>(ENDPOINTS.academico.gradoEducacion);
   },
+
   async create(nombre: string): Promise<GradoEducacion> {
-    const res = await http.post('/academico/grado_educacion', { nombre });
-    return res.data.data;
+    return apiPost<GradoEducacion, { nombre: string }>(ENDPOINTS.academico.gradoEducacion, { nombre });
   },
+
   async update(id: string, nombre: string): Promise<GradoEducacion> {
-    const res = await http.put(`/academico/grado_educacion/${id}`, { nombre });
-    return res.data.data;
+    return apiPut<GradoEducacion, { nombre: string }>(`${ENDPOINTS.academico.gradoEducacion}/${id}`, { nombre });
   },
+
   async remove(id: string): Promise<void> {
-    await http.delete(`/academico/grado_educacion/${id}`);
+    return apiVoidDelete(`${ENDPOINTS.academico.gradoEducacion}/${id}`);
   },
 };
 

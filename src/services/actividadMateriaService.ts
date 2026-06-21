@@ -1,12 +1,11 @@
-import http from './http';
+import { ENDPOINTS } from '../config';
 import type { ActividadMateria } from '../types/actividadMateria';
+import { apiGet, apiPost } from '../utils/apiHelpers';
 
 const actividadMateriaService = {
   async listByActividad(idActividad: string): Promise<ActividadMateria[]> {
-    const res = await http.get('/docente/actividad_materia', {
-      params: { idActividad },
-    });
-    return res.data.data;
+    const qs = new URLSearchParams({ idActividad });
+    return apiGet<ActividadMateria[]>(`${ENDPOINTS.docente.actividadMateria}?${qs}`);
   },
 
   async create(data: {
@@ -14,8 +13,7 @@ const actividadMateriaService = {
     idMateria: string;
     idCargaAcademica: string;
   }): Promise<ActividadMateria> {
-    const res = await http.post('/docente/actividad_materia', data);
-    return res.data.data;
+    return apiPost<ActividadMateria, typeof data>(ENDPOINTS.docente.actividadMateria, data);
   },
 };
 

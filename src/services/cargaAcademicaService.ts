@@ -1,17 +1,16 @@
-import http from './http';
+import { ENDPOINTS } from '../config';
 import type { CargaAcademica } from '../types/cargaAcademica';
+import { apiGet, apiPost, apiVoidDelete } from '../utils/apiHelpers';
 
 const cargaAcademicaService = {
   async getAll(): Promise<CargaAcademica[]> {
-    const res = await http.get('/docente/carga_academica');
-    return res.data.data;
+    return apiGet<CargaAcademica[]>(ENDPOINTS.docente.cargaAcademica);
   },
 
   async getByProfesor(idUsuario: string, idAnioElectivo?: string): Promise<CargaAcademica[]> {
-    const params: Record<string, string> = { idUsuario };
-    if (idAnioElectivo) params.idAnioElectivo = idAnioElectivo;
-    const res = await http.get('/docente/carga_academica', { params });
-    return res.data.data;
+    const qs = new URLSearchParams({ idUsuario });
+    if (idAnioElectivo) qs.set('idAnioElectivo', idAnioElectivo);
+    return apiGet<CargaAcademica[]>(`${ENDPOINTS.docente.cargaAcademica}?${qs}`);
   },
 
   async create(data: {
@@ -21,12 +20,11 @@ const cargaAcademicaService = {
     idAnioElectivo: string;
     idBloque?: string | null;
   }): Promise<CargaAcademica> {
-    const res = await http.post('/docente/carga_academica', data);
-    return res.data.data;
+    return apiPost<CargaAcademica, typeof data>(ENDPOINTS.docente.cargaAcademica, data);
   },
 
   async remove(id: string): Promise<void> {
-    await http.delete(`/docente/carga_academica/${id}`);
+    return apiVoidDelete(`${ENDPOINTS.docente.cargaAcademica}/${id}`);
   },
 };
 

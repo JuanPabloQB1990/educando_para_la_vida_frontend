@@ -1,27 +1,25 @@
-import http from './http';
+import { ENDPOINTS } from '../config';
 import type { LoginRequest, LoginResponse } from '../types/auth';
+import { apiPost, apiVoidPost } from '../utils/apiHelpers';
 
 export const authService = {
   async login(data: LoginRequest): Promise<LoginResponse> {
-    const res = await http.post<{ success: boolean; data: LoginResponse }>('/auth/login', data);
-    console.log(res);
-    
-    return res.data.data;
+    return apiPost<LoginResponse, LoginRequest>(ENDPOINTS.auth.login, data);
   },
 
   async logout(): Promise<void> {
-    await http.post('/auth/logout');
+    return apiVoidPost(ENDPOINTS.auth.logout);
   },
 
   async solicitarRecuperacion(email: string): Promise<void> {
-    await http.post('/auth/recuperar-password', { email });
+    return apiVoidPost(ENDPOINTS.auth.recuperarPassword, { email });
   },
 
   async verificarCodigo(email: string, code: string): Promise<void> {
-    await http.post('/auth/verificar-codigo', { email, code });
+    return apiVoidPost(ENDPOINTS.auth.verificarCodigo, { email, code });
   },
 
   async nuevaPassword(email: string, code: string, newPassword: string): Promise<void> {
-    await http.post('/auth/nueva-password', { email, code, newPassword });
+    return apiVoidPost(ENDPOINTS.auth.nuevaPassword, { email, code, newPassword });
   },
 };

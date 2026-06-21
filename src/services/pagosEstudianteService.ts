@@ -1,19 +1,17 @@
-import http from './http';
+import { ENDPOINTS } from '../config';
 import type { PagosEstudianteData } from '../types/pagosEstudiante';
+import { apiGet, apiVoidPost } from '../utils/apiHelpers';
 
 const pagosEstudianteService = {
   async getPagos(): Promise<PagosEstudianteData> {
-    const res = await http.get('/estudiante/pagos');
-    return res.data.data;
+    return apiGet<PagosEstudianteData>(ENDPOINTS.estudiante.pagos);
   },
 
   async subirComprobante(idObligacionPago: string, file: File): Promise<void> {
     const formData = new FormData();
     formData.append('idObligacionPago', idObligacionPago);
     formData.append('comprobante', file);
-    await http.post('/estudiante/pagos/comprobante', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    return apiVoidPost<FormData>(ENDPOINTS.estudiante.pagosComprobante, formData);
   },
 };
 

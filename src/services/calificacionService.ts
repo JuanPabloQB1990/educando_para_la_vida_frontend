@@ -1,4 +1,5 @@
-import http from './http';
+import { ENDPOINTS } from '../config';
+import { apiVoidPost, apiVoidPut } from '../utils/apiHelpers';
 
 const calificacionService = {
   async create(data: {
@@ -7,11 +8,11 @@ const calificacionService = {
     nota: number;
     observacion?: string;
   }): Promise<void> {
-    await http.post('/docente/calificacion', data);
+    return apiVoidPost<typeof data>(ENDPOINTS.docente.calificacion, data);
   },
 
   async update(id: string, data: { nota: number; observacion?: string | null }): Promise<void> {
-    await http.put(`/docente/calificacion/${id}`, data);
+    return apiVoidPut<typeof data>(`${ENDPOINTS.docente.calificacion}/${id}`, data);
   },
 };
 

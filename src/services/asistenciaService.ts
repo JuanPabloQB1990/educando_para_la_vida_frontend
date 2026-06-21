@@ -1,4 +1,5 @@
-import http from './http';
+import { ENDPOINTS } from '../config';
+import { apiVoidPost, apiVoidPatch } from '../utils/apiHelpers';
 
 const asistenciaService = {
   async updateFecha(data: {
@@ -6,7 +7,7 @@ const asistenciaService = {
     fechaActual: string;
     fechaNueva: string;
   }): Promise<void> {
-    await http.patch('/docente/asistencia/fecha', data);
+    return apiVoidPatch<typeof data>(ENDPOINTS.docente.asistenciaFecha, data);
   },
 
   async upsert(data: {
@@ -16,7 +17,7 @@ const asistenciaService = {
     estadoAsistencia: string | null;
     observacion?: string | null;
   }): Promise<void> {
-    await http.post('/docente/asistencia/upsert', data);
+    return apiVoidPost<typeof data>(ENDPOINTS.docente.asistenciaUpsert, data);
   },
 };
 

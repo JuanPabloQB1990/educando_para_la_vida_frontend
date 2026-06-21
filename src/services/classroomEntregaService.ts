@@ -1,49 +1,52 @@
-import http from './http';
+import { ENDPOINTS } from '../config';
 import type { ClassroomEntrega, ClassroomEntregaAdjunto, UpdateEstadoEntregaDto } from '../types/classroomEntrega';
+import { apiGet, apiPost, apiPatch, apiVoidDelete } from '../utils/apiHelpers';
 
 const classroomEntregaService = {
   async listByCarga(idCargaAcademica: string, idPeriodo?: string): Promise<ClassroomEntrega[]> {
-    const params: Record<string, string> = { idCargaAcademica };
-    if (idPeriodo) params.idPeriodo = idPeriodo;
-    const res = await http.get('/docente/classroom_entrega', { params });
-    return res.data.data;
+    const qs = new URLSearchParams({ idCargaAcademica });
+    if (idPeriodo) qs.set('idPeriodo', idPeriodo);
+    return apiGet<ClassroomEntrega[]>(`${ENDPOINTS.docente.classroomEntrega}?${qs}`);
   },
 
   async getAdjuntos(idEntrega: string): Promise<ClassroomEntregaAdjunto[]> {
-    const res = await http.get(`/docente/classroom_entrega/${idEntrega}/adjuntos`);
-    return res.data.data;
+    return apiGet<ClassroomEntregaAdjunto[]>(`${ENDPOINTS.docente.classroomEntrega}/${idEntrega}/adjuntos`);
   },
 
   async updateEstado(id: string, data: UpdateEstadoEntregaDto): Promise<ClassroomEntrega> {
-    const res = await http.patch(`/docente/classroom_entrega/${id}/estado`, data);
-    return res.data.data;
+    return apiPatch<ClassroomEntrega, UpdateEstadoEntregaDto>(
+      `${ENDPOINTS.docente.classroomEntrega}/${id}/estado`,
+      data
+    );
   },
 
   // Estudiante
   async listForEstudiante(): Promise<ClassroomEntrega[]> {
-    const res = await http.get('/estudiante/classroom/entregas');
-    return res.data.data;
+    return apiGet<ClassroomEntrega[]>(ENDPOINTS.estudiante.classroomEntregas);
   },
 
   async createForEstudiante(idClassroomTarea: string): Promise<ClassroomEntrega> {
-    const res = await http.post('/estudiante/classroom/entregas', { idClassroomTarea });
-    return res.data.data;
+    return apiPost<ClassroomEntrega, { idClassroomTarea: string }>(
+      ENDPOINTS.estudiante.classroomEntregas,
+      { idClassroomTarea }
+    );
   },
 
   async uploadAdjuntos(idEntrega: string, files: File[]): Promise<ClassroomEntregaAdjunto[]> {
     const formData = new FormData();
     files.forEach((file) => formData.append('files', file));
-    const res = await http.post(`/estudiante/classroom/entregas/${idEntrega}/adjuntos`, formData);
-    return res.data.data;
+    return apiPost<ClassroomEntregaAdjunto[], FormData>(
+      `${ENDPOINTS.estudiante.classroomEntregas}/${idEntrega}/adjuntos`,
+      formData
+    );
   },
 
   async getAdjuntosEstudiante(idEntrega: string): Promise<ClassroomEntregaAdjunto[]> {
-    const res = await http.get(`/estudiante/classroom/entregas/${idEntrega}/adjuntos`);
-    return res.data.data;
+    return apiGet<ClassroomEntregaAdjunto[]>(`${ENDPOINTS.estudiante.classroomEntregas}/${idEntrega}/adjuntos`);
   },
 
   async deleteAdjuntoEstudiante(idEntrega: string, adjuntoId: string): Promise<void> {
-    await http.delete(`/estudiante/classroom/entregas/${idEntrega}/adjuntos/${adjuntoId}`);
+    return apiVoidDelete(`${ENDPOINTS.estudiante.classroomEntregas}/${idEntrega}/adjuntos/${adjuntoId}`);
   },
 };
 

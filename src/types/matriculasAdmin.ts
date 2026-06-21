@@ -5,6 +5,7 @@ export interface EstudianteAdminFilters {
   padreCedula?: string;
   madreCedula?: string;
   acudienteCedula?: string;
+  conObligacionVencida?: boolean;
 }
 
 export interface EstudianteAdmin {
@@ -28,4 +29,16 @@ export interface EstudianteAdmin {
 export interface MatriculaConGrados {
   matricula: MatriculaInfo;
   grados: GradoMatricula[];
+}
+
+export interface ObligacionPagoAdmin {
+  idObligacionPago: string;
+  idRubro: string;
+  nombreRubro: string;
+  montoCuota: number;
+  fechaVencimiento: string | null;
+  estado: 'pendiente' | 'pagado' | 'vencido';
+  verificadoPorNombres: string | null;
+  verificadoPorApellido1: string | null;
+  verificadoPorApellido2: string | null;
 }

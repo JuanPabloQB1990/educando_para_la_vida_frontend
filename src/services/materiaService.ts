@@ -1,24 +1,28 @@
-import http from './http';
+import { ENDPOINTS } from '../config';
 import type { Materia } from '../types/materia';
+import { apiGet, apiPost, apiPut, apiVoidDelete } from '../utils/apiHelpers';
 
 const materiaService = {
   async getAll(): Promise<Materia[]> {
-    const res = await http.get('/catalogo/materia');
-    return res.data.data;
+    return apiGet<Materia[]>(ENDPOINTS.catalogo.materia);
   },
 
   async create(nombreMateria: string, abreviatura: string): Promise<Materia> {
-    const res = await http.post('/catalogo/materia', { nombreMateria, abreviatura });
-    return res.data.data;
+    return apiPost<Materia, { nombreMateria: string; abreviatura: string }>(
+      ENDPOINTS.catalogo.materia,
+      { nombreMateria, abreviatura }
+    );
   },
 
   async update(id: string, nombreMateria: string, abreviatura: string): Promise<Materia> {
-    const res = await http.put(`/catalogo/materia/${id}`, { nombreMateria, abreviatura });
-    return res.data.data;
+    return apiPut<Materia, { nombreMateria: string; abreviatura: string }>(
+      `${ENDPOINTS.catalogo.materia}/${id}`,
+      { nombreMateria, abreviatura }
+    );
   },
 
   async remove(id: string): Promise<void> {
-    await http.delete(`/catalogo/materia/${id}`);
+    return apiVoidDelete(`${ENDPOINTS.catalogo.materia}/${id}`);
   },
 };
 

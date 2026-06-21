@@ -68,7 +68,7 @@ function EstadoObligacionBadge({ estado }: { estado: PagoAdmin['estadoObligacion
 function SkeletonRow() {
   return (
     <tr>
-      {Array.from({ length: 13 }).map((_, i) => (
+      {Array.from({ length: 15 }).map((_, i) => (
         <td key={i} className="px-4 py-3">
           <div className="h-3.5 bg-gray-200 rounded animate-pulse" style={{ width: `${60 + (i % 3) * 20}%` }} />
         </td>
@@ -631,6 +631,8 @@ export default function PagosAdminPage() {
                 <th className="px-4 py-3 text-left font-semibold text-gray-700">Info</th>
                 <th className="px-4 py-3 text-left font-semibold text-gray-700">F. inscripción</th>
                 <th className="px-4 py-3 text-left font-semibold text-gray-700">F. verificación</th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-700">Verificado por</th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-700">Observaciones</th>
                 <th className="px-4 py-3 text-left font-semibold text-gray-700">Acciones</th>
               </tr>
             </thead>
@@ -639,7 +641,7 @@ export default function PagosAdminPage() {
                 Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
               ) : !pagos?.length ? (
                 <tr>
-                  <td colSpan={11} className="px-6 py-10 text-center text-gray-400">
+                  <td colSpan={13} className="px-6 py-10 text-center text-gray-400">
                     No hay comprobantes que coincidan con los filtros.
                   </td>
                 </tr>
@@ -669,6 +671,16 @@ export default function PagosAdminPage() {
                     </td>
                     <td className="px-4 py-3 text-gray-600">{formatFecha(p.fechaInscripcion)}</td>
                     <td className="px-4 py-3 text-gray-600">{formatFecha(p.fechaVerificacion)}</td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {p.verificadoPorNombres
+                        ? [p.verificadoPorNombres, p.verificadoPorApellido1, p.verificadoPorApellido2].filter(Boolean).join(' ')
+                        : <span className="text-gray-400 italic text-xs">—</span>}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 max-w-[180px]">
+                      {p.observaciones
+                        ? <span className="block truncate text-xs" title={p.observaciones}>{p.observaciones}</span>
+                        : <span className="text-gray-400 italic text-xs">—</span>}
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col gap-1.5">
                         <button

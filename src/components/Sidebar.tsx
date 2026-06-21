@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import type { RolNombre } from '../types/auth';
+import logo from '../assets/logo.jpeg';
 
 interface NavItem {
   label: string;
@@ -85,9 +86,13 @@ export function Sidebar({ isOpen, onClose, collapsed = false, onToggleCollapse }
         ${collapsed ? 'lg:w-0 lg:overflow-hidden' : 'lg:w-64'}`}
     >
       {/* Logo */}
-      <div className="h-16 flex items-center px-6 border-b border-indigo-700 shrink-0">
-        <span className="font-bold text-lg leading-tight">Educando Para<br />La Vida</span>
-        <div className="ml-auto flex items-center gap-1">
+      <div className="shrink-0 border-b border-indigo-700">
+        <img
+          src={logo}
+          alt="Educando Para La Vida"
+          className="w-full object-cover object-center max-h-40"
+        />
+        <div className="flex justify-end px-2 py-1">
           <button
             onClick={onToggleCollapse}
             className="hidden lg:flex items-center justify-center text-indigo-300 hover:text-white p-1 rounded"
@@ -97,7 +102,7 @@ export function Sidebar({ isOpen, onClose, collapsed = false, onToggleCollapse }
           </button>
           <button
             onClick={onClose}
-            className="lg:hidden text-indigo-300 hover:text-white"
+            className="lg:hidden text-indigo-300 hover:text-white p-1"
             aria-label="Cerrar menú"
           >
             <IconX />

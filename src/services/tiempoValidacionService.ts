@@ -1,21 +1,22 @@
-import http from './http';
+import { ENDPOINTS } from '../config';
 import type { TiempoValidacion } from '../types/tiempoValidacion';
+import { apiGet, apiPost, apiPut, apiVoidDelete } from '../utils/apiHelpers';
 
 const tiempoValidacionService = {
   async getAll(): Promise<TiempoValidacion[]> {
-    const res = await http.get('/academico/tiempo_validacion');
-    return res.data.data;
+    return apiGet<TiempoValidacion[]>(ENDPOINTS.academico.tiempoValidacion);
   },
+
   async create(tiempo: number): Promise<TiempoValidacion> {
-    const res = await http.post('/academico/tiempo_validacion', { tiempo });
-    return res.data.data;
+    return apiPost<TiempoValidacion, { tiempo: number }>(ENDPOINTS.academico.tiempoValidacion, { tiempo });
   },
+
   async update(id: string, tiempo: number): Promise<TiempoValidacion> {
-    const res = await http.put(`/academico/tiempo_validacion/${id}`, { tiempo });
-    return res.data.data;
+    return apiPut<TiempoValidacion, { tiempo: number }>(`${ENDPOINTS.academico.tiempoValidacion}/${id}`, { tiempo });
   },
+
   async remove(id: string): Promise<void> {
-    await http.delete(`/academico/tiempo_validacion/${id}`);
+    return apiVoidDelete(`${ENDPOINTS.academico.tiempoValidacion}/${id}`);
   },
 };
 

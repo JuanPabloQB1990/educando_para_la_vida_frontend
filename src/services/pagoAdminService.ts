@@ -1,67 +1,73 @@
-import http from './http';
+import { ENDPOINTS } from '../config';
 import type { PagoAdmin, PagoAdminFilters, VerificarPagoDto, MatricularAnioDto, GradoMatriculado, ObligacionPagoEstudiante } from '../types/pago';
 import type { Rubro } from '../types/rubro';
+import { apiGet, apiPost, apiVoidPost, apiVoidPut, apiVoidPatch, apiVoidDelete } from '../utils/apiHelpers';
 
 export const pagoAdminService = {
   async getPagosAdmin(filters: PagoAdminFilters = {}): Promise<PagoAdmin[]> {
-    const params = Object.fromEntries(
-      Object.entries(filters).filter(([, v]) => v !== '' && v !== undefined)
-    );
-    const res = await http.get<{ success: boolean; data: PagoAdmin[] }>('/gestion/pago/admin', { params });
-    return res.data.data;
+    const qs = new URLSearchParams();
+    Object.entries(filters).forEach(([k, v]) => {
+      if (v !== undefined && v !== '') qs.set(k, String(v));
+    });
+    const query = qs.toString();
+    return apiGet<PagoAdmin[]>(`${ENDPOINTS.gestion.pagoAdmin}${query ? `?${query}` : ''}`);
   },
 
   async verificar(id: string, dto: VerificarPagoDto): Promise<void> {
-    await http.patch(`/gestion/pago/${id}/verificar`, dto);
+    return apiVoidPatch<VerificarPagoDto>(`${ENDPOINTS.gestion.pago}/${id}/verificar`, dto);
   },
 
   async getRubros(): Promise<Rubro[]> {
-    const res = await http.get<{ success: boolean; data: Rubro[] }>('/gestion/rubro');
-    return res.data.data;
+    return apiGet<Rubro[]>(ENDPOINTS.gestion.rubro);
   },
 
   async matricularAnio(idEstudianteMatricula: string, dto: MatricularAnioDto): Promise<void> {
-    await http.post(`/gestion/estudiante_matricula/${idEstudianteMatricula}/matricular-anio`, dto);
+    return apiVoidPost<MatricularAnioDto>(
+      `${ENDPOINTS.gestion.estudianteMatricula}/${idEstudianteMatricula}/matricular-anio`,
+      dto
+    );
   },
 
   async getGradosByMatricula(idEstudianteMatricula: string): Promise<GradoMatriculado[]> {
-    const res = await http.get<{ success: boolean; data: GradoMatriculado[] }>(
-      `/gestion/estudiante_matricula/${idEstudianteMatricula}/grados`
+    return apiGet<GradoMatriculado[]>(
+      `${ENDPOINTS.gestion.estudianteMatricula}/${idEstudianteMatricula}/grados`
     );
-    return res.data.data;
   },
 
   async getObligacionesByMatricula(idEstudianteMatricula: string): Promise<ObligacionPagoEstudiante[]> {
-    const res = await http.get<{ success: boolean; data: ObligacionPagoEstudiante[] }>(
-      `/gestion/estudiante_matricula/${idEstudianteMatricula}/obligaciones`
+    return apiGet<ObligacionPagoEstudiante[]>(
+      `${ENDPOINTS.gestion.estudianteMatricula}/${idEstudianteMatricula}/obligaciones`
     );
-    return res.data.data;
   },
 
   async deleteObligacion(id: string): Promise<void> {
-    await http.delete(`/gestion/obligacion_pago/${id}`);
+    return apiVoidDelete(`${ENDPOINTS.gestion.obligacionPago}/${id}`);
   },
 
   async getEstudianteMatricula(id: string): Promise<{ idTipoEstudio: string | null; idTiempoValidacion: string | null }> {
-    const res = await http.get<{ success: boolean; data: { idTipoEstudio: string | null; idTiempoValidacion: string | null } }>(
-      `/gestion/estudiante_matricula/${id}`
+    return apiGet<{ idTipoEstudio: string | null; idTiempoValidacion: string | null }>(
+      `${ENDPOINTS.gestion.estudianteMatricula}/${id}`
     );
-    return res.data.data;
   },
 
   async updateEstudianteMatricula(id: string, data: { id_tipo_estudio?: string | null; id_tiempo_validacion?: string | null }): Promise<void> {
-    await http.put(`/gestion/estudiante_matricula/${id}`, data);
+    return apiVoidPut<typeof data>(`${ENDPOINTS.gestion.estudianteMatricula}/${id}`, data);
   },
 
   async createGradoPorMatricula(data: { id_estudiante_matricula: string; id_grado_educacion: string; estado: string }): Promise<void> {
-    await http.post('/gestion/grados_por_matricula', data);
+    return apiVoidPost<typeof data>(ENDPOINTS.gestion.gradosPorMatricula, data);
   },
 
   async updateGradoPorMatricula(idEstudianteMatricula: string, idGradoEducacion: string, estado: string): Promise<void> {
-    await http.put(`/gestion/grados_por_matricula/${idEstudianteMatricula}/${idGradoEducacion}`, { estado });
+    return apiVoidPut<{ estado: string }>(
+      `${ENDPOINTS.gestion.gradosPorMatricula}/${idEstudianteMatricula}/${idGradoEducacion}`,
+      { estado }
+    );
   },
 
   async deleteGradoPorMatricula(idEstudianteMatricula: string, idGradoEducacion: string): Promise<void> {
-    await http.delete(`/gestion/grados_por_matricula/${idEstudianteMatricula}/${idGradoEducacion}`);
+    return apiVoidDelete(
+      `${ENDPOINTS.gestion.gradosPorMatricula}/${idEstudianteMatricula}/${idGradoEducacion}`
+    );
   },
 };

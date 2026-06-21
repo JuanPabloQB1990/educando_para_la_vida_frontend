@@ -1,10 +1,10 @@
-import http from './http';
+import { ENDPOINTS } from '../config';
 import type { Bloque } from '../types/bloque';
+import { apiGet } from '../utils/apiHelpers';
 
 const bloqueService = {
   async getAll(): Promise<Bloque[]> {
-    const res = await http.get('/academico/bloque');
-    return res.data.data;
+    return apiGet<Bloque[]>(ENDPOINTS.academico.bloque);
   },
 };
 

@@ -1,4 +1,4 @@
-import http from './http';
+import { ENDPOINTS } from '../config';
 import type {
   UsuarioAdmin,
   CreateUsuarioDto,
@@ -7,33 +7,30 @@ import type {
   Rol,
   TipoDocumento,
 } from '../types/usuario';
+import { apiGet, apiPost, apiVoidPut, apiVoidDelete } from '../utils/apiHelpers';
 
 export const usuarioService = {
   async getAll(): Promise<UsuarioAdmin[]> {
-    const res = await http.get<{ success: boolean; data: UsuarioAdmin[] }>('/usuario/usuario');
-    return res.data.data;
+    return apiGet<UsuarioAdmin[]>(ENDPOINTS.usuario.usuario);
   },
 
   async create(data: CreateUsuarioDto): Promise<CreateUsuarioResponse> {
-    const res = await http.post<{ success: boolean; data: CreateUsuarioResponse }>('/usuario/usuario', data);
-    return res.data.data;
+    return apiPost<CreateUsuarioResponse, CreateUsuarioDto>(ENDPOINTS.usuario.usuario, data);
   },
 
   async update(id: string, data: UpdateUsuarioDto): Promise<void> {
-    await http.put(`/usuario/usuario/${id}`, data);
+    return apiVoidPut<UpdateUsuarioDto>(`${ENDPOINTS.usuario.usuario}/${id}`, data);
   },
 
   async remove(id: string): Promise<void> {
-    await http.delete(`/usuario/usuario/${id}`);
+    return apiVoidDelete(`${ENDPOINTS.usuario.usuario}/${id}`);
   },
 
   async getRoles(): Promise<Rol[]> {
-    const res = await http.get<{ success: boolean; data: Rol[] }>('/usuario/rol');
-    return res.data.data;
+    return apiGet<Rol[]>(ENDPOINTS.usuario.rol);
   },
 
   async getTiposDocumento(): Promise<TipoDocumento[]> {
-    const res = await http.get<{ success: boolean; data: TipoDocumento[] }>('/usuario/tipo_documento');
-    return res.data.data;
+    return apiGet<TipoDocumento[]>(ENDPOINTS.usuario.tipoDocumento);
   },
 };

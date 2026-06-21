@@ -1,5 +1,9 @@
 import http from './http';
+import { ENDPOINTS } from '../config';
+import type { ApiResponse } from '../types/api';
 import type { DireccionGrado } from '../types/direccionGrado';
+import { apiGet, apiPost, apiPut, apiPatch, apiVoidDelete } from '../utils/apiHelpers';
+import { handleApiError } from '../utils/apiHelpers';
 
 export interface CreateDireccionGradoDto {
   idGradoEducacion?: string | null;
@@ -10,34 +14,43 @@ export interface CreateDireccionGradoDto {
 
 const direccionGradoService = {
   async getAll(): Promise<DireccionGrado[]> {
-    const res = await http.get('/docente/direccion_grado');
-    return res.data.data;
-  },
-  async getByProfesor(idUsuario: string, idAnioElectivo?: string): Promise<DireccionGrado[]> {
-    const params: Record<string, string> = { idUsuario };
-    if (idAnioElectivo) params.idAnioElectivo = idAnioElectivo;
-    const res = await http.get('/docente/direccion_grado', { params });
-    return res.data.data;
-  },
-  async updateLink(id: string, linkClaseVirtual: string): Promise<DireccionGrado> {
-    const res = await http.patch(`/docente/direccion_grado/${id}/link`, { linkClaseVirtual });
-    return res.data.data;
-  },
-  async create(data: CreateDireccionGradoDto): Promise<DireccionGrado> {
-    const res = await http.post('/docente/direccion_grado', data);
-    return res.data.data;
-  },
-  async update(id: string, data: CreateDireccionGradoDto): Promise<DireccionGrado> {
-    const res = await http.put(`/docente/direccion_grado/${id}`, data);
-    return res.data.data;
-  },
-  async remove(id: string): Promise<void> {
-    await http.delete(`/docente/direccion_grado/${id}`);
+    return apiGet<DireccionGrado[]>(ENDPOINTS.docente.direccionGrado);
   },
 
+  async getByProfesor(idUsuario: string, idAnioElectivo?: string): Promise<DireccionGrado[]> {
+    const qs = new URLSearchParams({ idUsuario });
+    if (idAnioElectivo) qs.set('idAnioElectivo', idAnioElectivo);
+    return apiGet<DireccionGrado[]>(`${ENDPOINTS.docente.direccionGrado}?${qs}`);
+  },
+
+  async updateLink(id: string, linkClaseVirtual: string): Promise<DireccionGrado> {
+    return apiPatch<DireccionGrado, { linkClaseVirtual: string }>(
+      `${ENDPOINTS.docente.direccionGrado}/${id}/link`,
+      { linkClaseVirtual }
+    );
+  },
+
+  async create(data: CreateDireccionGradoDto): Promise<DireccionGrado> {
+    return apiPost<DireccionGrado, CreateDireccionGradoDto>(ENDPOINTS.docente.direccionGrado, data);
+  },
+
+  async update(id: string, data: CreateDireccionGradoDto): Promise<DireccionGrado> {
+    return apiPut<DireccionGrado, CreateDireccionGradoDto>(`${ENDPOINTS.docente.direccionGrado}/${id}`, data);
+  },
+
+  async remove(id: string): Promise<void> {
+    return apiVoidDelete(`${ENDPOINTS.docente.direccionGrado}/${id}`);
+  },
+
+  // El recurso puede no existir: data puede ser null
   async getForEstudiante(): Promise<DireccionGrado | null> {
-    const res = await http.get('/estudiante/clase-virtual');
-    return res.data.data;
+    try {
+      const res = await http.get<ApiResponse<DireccionGrado | null>>(ENDPOINTS.estudiante.claseVirtual);
+      if (!res.data.success) throw new Error(res.data.error || 'Error desconocido de la API');
+      return res.data.data ?? null;
+    } catch (error) {
+      return handleApiError(error);
+    }
   },
 };
 

@@ -1,21 +1,22 @@
-import http from './http';
+import { ENDPOINTS } from '../config';
 import type { TipoEstudio } from '../types/tipoEstudio';
+import { apiGet, apiPost, apiPut, apiVoidDelete } from '../utils/apiHelpers';
 
 const tipoEstudioService = {
   async getAll(): Promise<TipoEstudio[]> {
-    const res = await http.get('/academico/tipo_estudio');
-    return res.data.data;
+    return apiGet<TipoEstudio[]>(ENDPOINTS.academico.tipoEstudio);
   },
+
   async create(nombre: string): Promise<TipoEstudio> {
-    const res = await http.post('/academico/tipo_estudio', { nombre });
-    return res.data.data;
+    return apiPost<TipoEstudio, { nombre: string }>(ENDPOINTS.academico.tipoEstudio, { nombre });
   },
+
   async update(id: string, nombre: string): Promise<TipoEstudio> {
-    const res = await http.put(`/academico/tipo_estudio/${id}`, { nombre });
-    return res.data.data;
+    return apiPut<TipoEstudio, { nombre: string }>(`${ENDPOINTS.academico.tipoEstudio}/${id}`, { nombre });
   },
+
   async remove(id: string): Promise<void> {
-    await http.delete(`/academico/tipo_estudio/${id}`);
+    return apiVoidDelete(`${ENDPOINTS.academico.tipoEstudio}/${id}`);
   },
 };
 

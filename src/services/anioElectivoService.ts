@@ -1,23 +1,21 @@
-import http from './http';
+import { ENDPOINTS } from '../config';
 import type { AnioElectivo, CreateAnioElectivoDto, UpdateAnioElectivoDto } from '../types/anioElectivo';
+import { apiGet, apiPost, apiPut, apiVoidDelete } from '../utils/apiHelpers';
 
 export const anioElectivoService = {
   async getAll(): Promise<AnioElectivo[]> {
-    const res = await http.get<{ success: boolean; data: AnioElectivo[] }>('/gestion/anio_electivo');
-    return res.data.data;
+    return apiGet<AnioElectivo[]>(ENDPOINTS.gestion.anioElectivo);
   },
 
   async create(data: CreateAnioElectivoDto): Promise<string> {
-    const res = await http.post<{ success: boolean; data: string }>('/gestion/anio_electivo', data);
-    return res.data.data;
+    return apiPost<string, CreateAnioElectivoDto>(ENDPOINTS.gestion.anioElectivo, data);
   },
 
   async update(id: string, data: UpdateAnioElectivoDto): Promise<AnioElectivo> {
-    const res = await http.put<{ success: boolean; data: AnioElectivo }>(`/gestion/anio_electivo/${id}`, data);
-    return res.data.data;
+    return apiPut<AnioElectivo, UpdateAnioElectivoDto>(`${ENDPOINTS.gestion.anioElectivo}/${id}`, data);
   },
 
   async remove(id: string): Promise<void> {
-    await http.delete(`/gestion/anio_electivo/${id}`);
+    return apiVoidDelete(`${ENDPOINTS.gestion.anioElectivo}/${id}`);
   },
 };

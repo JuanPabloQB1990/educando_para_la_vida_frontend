@@ -32,6 +32,7 @@ const EMPTY_FILTERS: EstudianteAdminFilters = {
   padreCedula: '',
   madreCedula: '',
   acudienteCedula: '',
+  conObligacionVencida: false,
 };
 
 export default function MatriculasAdminPage() {
@@ -47,6 +48,7 @@ export default function MatriculasAdminPage() {
     if (draft.padreCedula) active.padreCedula = draft.padreCedula;
     if (draft.madreCedula) active.madreCedula = draft.madreCedula;
     if (draft.acudienteCedula) active.acudienteCedula = draft.acudienteCedula;
+    if (draft.conObligacionVencida) active.conObligacionVencida = true;
     setApplied(active);
   }
 
@@ -105,6 +107,17 @@ export default function MatriculasAdminPage() {
               onChange={(e) => setDraft((p) => ({ ...p, acudienteCedula: e.target.value }))}
             />
           </div>
+        </div>
+        <div className="mt-4">
+          <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={draft.conObligacionVencida ?? false}
+              onChange={(e) => setDraft((p) => ({ ...p, conObligacionVencida: e.target.checked }))}
+              className="w-4 h-4 rounded border-gray-300 text-red-600 focus:ring-red-400"
+            />
+            <span className="text-sm text-gray-700 font-medium">Solo estudiantes con obligaciones vencidas</span>
+          </label>
         </div>
         <div className="flex gap-2 mt-4">
           <button

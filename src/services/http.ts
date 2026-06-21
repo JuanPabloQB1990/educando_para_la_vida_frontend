@@ -1,7 +1,8 @@
 import axios from 'axios';
 import type { InternalAxiosRequestConfig, AxiosResponse } from 'axios';
+import { config, ENDPOINTS } from '../config';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const BASE_URL = config.api.baseUrl;
 
 const ACCESS_KEY = 'epl_access';
 const REFRESH_KEY = 'epl_refresh';
@@ -12,6 +13,7 @@ export const setTokens = (access: string, refresh: string): void => {
   sessionStorage.setItem(ACCESS_KEY, access);
   localStorage.setItem(REFRESH_KEY, refresh);
 };
+
 export const clearTokens = (): void => {
   sessionStorage.removeItem(ACCESS_KEY);
   localStorage.removeItem(REFRESH_KEY);
@@ -64,7 +66,7 @@ http.interceptors.response.use(
 
     try {
       const { data } = await axios.post<{ success: boolean; data: { accessToken: string } }>(
-        `${BASE_URL}/auth/refresh`,
+        `${BASE_URL}${ENDPOINTS.auth.refresh}`,
         { refreshToken }
       );
       const newAccess = data.data.accessToken;

@@ -1,5 +1,6 @@
-import http from './http';
+import { ENDPOINTS } from '../config';
 import type { Rubro } from '../types/rubro';
+import { apiGet, apiPost, apiPut, apiVoidDelete } from '../utils/apiHelpers';
 
 export interface RubroDto {
   nombre: string;
@@ -9,19 +10,19 @@ export interface RubroDto {
 
 const rubroService = {
   async getAll(): Promise<Rubro[]> {
-    const res = await http.get('/gestion/rubro');
-    return res.data.data;
+    return apiGet<Rubro[]>(ENDPOINTS.gestion.rubro);
   },
+
   async create(dto: RubroDto): Promise<Rubro> {
-    const res = await http.post('/gestion/rubro', dto);
-    return res.data.data;
+    return apiPost<Rubro, RubroDto>(ENDPOINTS.gestion.rubro, dto);
   },
+
   async update(id: string, dto: RubroDto): Promise<Rubro> {
-    const res = await http.put(`/gestion/rubro/${id}`, dto);
-    return res.data.data;
+    return apiPut<Rubro, RubroDto>(`${ENDPOINTS.gestion.rubro}/${id}`, dto);
   },
+
   async remove(id: string): Promise<void> {
-    await http.delete(`/gestion/rubro/${id}`);
+    return apiVoidDelete(`${ENDPOINTS.gestion.rubro}/${id}`);
   },
 };
 

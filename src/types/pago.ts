@@ -98,6 +98,10 @@ export interface PagoAdmin {
   estadoUsuario: 'activo' | 'inactivo';
   fechaExpedicionDocumento: string | null;
   nombreTipoDocumento: string | null;
+  // auditoria_pago
+  verificadoPorNombres: string | null;
+  verificadoPorApellido1: string | null;
+  verificadoPorApellido2: string | null;
 }
 
 export interface PagoAdminFilters {
@@ -138,4 +142,7 @@ export interface ObligacionPagoEstudiante {
   fechaVencimiento: string | null;
   estado: 'pendiente' | 'pagado' | 'vencido';
   nombreRubro: string;
+  verificadoPorNombres: string | null;
+  verificadoPorApellido1: string | null;
+  verificadoPorApellido2: string | null;
 }

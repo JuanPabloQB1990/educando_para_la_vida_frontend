@@ -1,4 +1,5 @@
-import http from './http';
+import { ENDPOINTS } from '../config';
+import { apiVoidPost, apiVoidDelete } from '../utils/apiHelpers';
 
 const autoevaluacionService = {
   async upsert(data: {
@@ -8,11 +9,11 @@ const autoevaluacionService = {
     nota: number;
     observacion?: string | null;
   }): Promise<void> {
-    await http.post('/docente/autoevaluacion/upsert', data);
+    return apiVoidPost<typeof data>(ENDPOINTS.docente.autoevaluacionUpsert, data);
   },
 
   async delete(id: string): Promise<void> {
-    await http.delete(`/docente/autoevaluacion/${id}`);
+    return apiVoidDelete(`${ENDPOINTS.docente.autoevaluacion}/${id}`);
   },
 };
 

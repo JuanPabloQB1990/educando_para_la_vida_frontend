@@ -1,12 +1,11 @@
-import http from './http';
+import { ENDPOINTS } from '../config';
 import type { Actividad } from '../types/actividad';
+import { apiGet, apiPost, apiPut } from '../utils/apiHelpers';
 
 const actividadService = {
   async list(idGradoEducacion: string, idPeriodo: string): Promise<Actividad[]> {
-    const res = await http.get('/docente/actividad', {
-      params: { idGradoEducacion, idPeriodo },
-    });
-    return res.data.data;
+    const qs = new URLSearchParams({ idGradoEducacion, idPeriodo });
+    return apiGet<Actividad[]>(`${ENDPOINTS.docente.actividad}?${qs}`);
   },
 
   async create(data: {
@@ -14,13 +13,14 @@ const actividadService = {
     idGradoEducacion: string;
     nombreActividad: string;
   }): Promise<Actividad> {
-    const res = await http.post('/docente/actividad', data);
-    return res.data.data;
+    return apiPost<Actividad, typeof data>(ENDPOINTS.docente.actividad, data);
   },
 
   async update(id: string, nombreActividad: string): Promise<Actividad> {
-    const res = await http.put(`/docente/actividad/${id}`, { nombreActividad });
-    return res.data.data;
+    return apiPut<Actividad, { nombreActividad: string }>(
+      `${ENDPOINTS.docente.actividad}/${id}`,
+      { nombreActividad }
+    );
   },
 };
 

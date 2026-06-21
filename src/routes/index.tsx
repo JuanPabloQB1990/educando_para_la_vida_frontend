@@ -1,19 +1,15 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import type { RouteObject } from 'react-router-dom';
-
 import HomePage from '../pages/HomePage';
 import RegistrationPage from '../pages/RegistrationPage';
 import LoginPage from '../pages/LoginPage';
 import RecuperarPasswordPage from '../pages/RecuperarPasswordPage';
 import NuevaPasswordPage from '../pages/NuevaPasswordPage';
 import UnauthorizedPage from '../pages/UnauthorizedPage';
-
 import { ProtectedRoute } from './ProtectedRoute';
 import { RoleRoute } from './RoleRoute';
-
 import DashboardLayout from '../layouts/DashboardLayout';
-
 import DashboardAdminPage from '../pages/admin/DashboardAdminPage';
 import AnioElectivoPage from '../pages/admin/AnioElectivoPage';
 import PeriodosAdminPage from '../pages/admin/PeriodosAdminPage';

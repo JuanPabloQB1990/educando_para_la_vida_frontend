@@ -1,21 +1,26 @@
-import http from './http';
+import { ENDPOINTS } from '../config';
 import type { PlanEstudio } from '../types/planEstudio';
+import { apiGet, apiPost, apiVoidDelete } from '../utils/apiHelpers';
 
 const planEstudioService = {
   async getAll(): Promise<PlanEstudio[]> {
-    const res = await http.get('/catalogo/plan_estudio');
-    return res.data.data;
+    return apiGet<PlanEstudio[]>(ENDPOINTS.catalogo.planEstudio);
   },
+
   async getByGrado(idGradoEducacion: string): Promise<PlanEstudio[]> {
-    const res = await http.get('/catalogo/plan_estudio', { params: { idGradoEducacion } });
-    return res.data.data;
+    const qs = new URLSearchParams({ idGradoEducacion });
+    return apiGet<PlanEstudio[]>(`${ENDPOINTS.catalogo.planEstudio}?${qs}`);
   },
+
   async create(idGradoEducacion: string, idMateria: string): Promise<PlanEstudio> {
-    const res = await http.post('/catalogo/plan_estudio', { idGradoEducacion, idMateria });
-    return res.data.data;
+    return apiPost<PlanEstudio, { idGradoEducacion: string; idMateria: string }>(
+      ENDPOINTS.catalogo.planEstudio,
+      { idGradoEducacion, idMateria }
+    );
   },
+
   async remove(id: string): Promise<void> {
-    await http.delete(`/catalogo/plan_estudio/${id}`);
+    return apiVoidDelete(`${ENDPOINTS.catalogo.planEstudio}/${id}`);
   },
 };
 

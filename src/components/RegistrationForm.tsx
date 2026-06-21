@@ -1,6 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { TiempoValidacion, TipoDocumento, TipoEstudio, TipoGrado } from '../types/registration';
-import { getTipoDocumentos, getTipoEstudios, getGradosEducacion, getTiemposValidacion, submitRegistration } from '../services/api';
+import type { TipoDocumento } from '../types/usuario';
+import type { TipoEstudio } from '../types/tipoEstudio';
+import type { GradoEducacion } from '../types/gradoEducacion';
+import type { TiempoValidacion } from '../types/tiempoValidacion';
+import { usuarioService } from '../services/usuarioService';
+import tipoEstudioService from '../services/tipoEstudioService';
+import gradoEducacionService from '../services/gradoEducacionService';
+import tiempoValidacionService from '../services/tiempoValidacionService';
+import registrationService from '../services/registrationService';
 
 const RegistrationForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -11,7 +18,7 @@ const RegistrationForm: React.FC = () => {
   const [gradesError, setGradesError] = useState<string>('');
   const [docTypes, setDocTypes] = useState<TipoDocumento[]>([]);
   const [tipoEstudios, setTipoEstudios] = useState<TipoEstudio[]>([]);
-  const [tipoGrados, setTipoGrados] = useState<TipoGrado[]>([]);
+  const [tipoGrados, setTipoGrados] = useState<GradoEducacion[]>([]);
   const [tiemposValidacion, setTiemposValidacion] = useState<TiempoValidacion[]>([]);
   const [tiemposValidacionLoading, setTiemposValidacionLoading] = useState(false);
   const [tiemposValidacionError, setTiemposValidacionError] = useState<string | null>(null);
@@ -33,9 +40,9 @@ const RegistrationForm: React.FC = () => {
     const loadData = async () => {
       try {
         const [docs, estudios, grados] = await Promise.all([
-          getTipoDocumentos(),
-          getTipoEstudios(),
-          getGradosEducacion(),
+          usuarioService.getTiposDocumento(),
+          tipoEstudioService.getAll(),
+          gradoEducacionService.getAll(),
         ]);
         
         setDocTypes(docs);
@@ -54,7 +61,7 @@ const RegistrationForm: React.FC = () => {
       setTiemposValidacionLoading(true);
       setTiemposValidacionError(null);
       try {
-        const rows = await getTiemposValidacion();
+        const rows = await tiempoValidacionService.getAll();
         if (!cancelled) {
           setTiemposValidacion(rows);
         }
@@ -153,7 +160,7 @@ const RegistrationForm: React.FC = () => {
 
     try {
      
-      await submitRegistration(formData);
+      await registrationService.submit(formData);
       setSuccess(true);
       (e.target as HTMLFormElement).reset();
       setStudyType('');

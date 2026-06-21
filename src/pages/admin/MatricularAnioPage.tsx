@@ -42,8 +42,8 @@ function formatMonto(monto: string | null) {
   }).format(Number(monto));
 }
 
-type GradoEstado = 'pendiente' | 'cursando' | 'aprobado' | 'reprobado' | 'retirado';
-const GRADO_ESTADOS: GradoEstado[] = ['pendiente', 'cursando', 'aprobado', 'reprobado', 'retirado'];
+type GradoEstado = 'pendiente' | 'aprobado' | 'reprobado' | 'retirado';
+const GRADO_ESTADOS: GradoEstado[] = ['pendiente', 'aprobado', 'reprobado', 'retirado'];
 
 const GRADO_BADGE: Record<string, string> = {
   pendiente: 'bg-yellow-100 text-yellow-700',
@@ -399,11 +399,16 @@ export default function MatricularAnioPage() {
                   <th className="text-left px-3 py-2 font-medium text-xs">Rubro</th>
                   <th className="text-left px-3 py-2 font-medium text-xs">Vencimiento</th>
                   <th className="text-left px-3 py-2 font-medium text-xs">Estado</th>
+                  <th className="text-left px-3 py-2 font-medium text-xs">Verificado por</th>
                   <th className="text-left px-3 py-2 font-medium text-xs">Acción</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {obligaciones.map((ob) => (
+                {obligaciones.map((ob) => {
+                  const verificador = ob.verificadoPorNombres
+                    ? [ob.verificadoPorNombres, ob.verificadoPorApellido1, ob.verificadoPorApellido2].filter(Boolean).join(' ')
+                    : null;
+                  return (
                   <tr key={ob.idObligacionPago}>
                     <td className="px-3 py-2 text-gray-700">{ob.nombreRubro}</td>
                     <td className="px-3 py-2 text-gray-600">
@@ -416,6 +421,7 @@ export default function MatricularAnioPage() {
                         {ob.estado}
                       </span>
                     </td>
+                    <td className="px-3 py-2 text-gray-600 text-xs">{verificador ?? '—'}</td>
                     <td className="px-3 py-2">
                       <button
                         type="button"
@@ -432,7 +438,8 @@ export default function MatricularAnioPage() {
                       </button>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

@@ -1,5 +1,6 @@
-import http from './http';
+import { ENDPOINTS } from '../config';
 import type { PlanillaAcademica } from '../types/planillaAcademica';
+import { apiGet } from '../utils/apiHelpers';
 
 const planillaAcademicaService = {
   async get(params: {
@@ -7,8 +8,8 @@ const planillaAcademicaService = {
     idAnioElectivo: string;
     idPeriodo: string;
   }): Promise<PlanillaAcademica> {
-    const res = await http.get('/docente/planilla_academica', { params });
-    return res.data.data;
+    const qs = new URLSearchParams(params);
+    return apiGet<PlanillaAcademica>(`${ENDPOINTS.docente.planillaAcademica}?${qs}`);
   },
 };
 
